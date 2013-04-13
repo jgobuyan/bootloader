@@ -6,6 +6,8 @@
 #include "stm32f37x.h"
 #include "stm32373c_eval_lcd.h"
 #include "debug.h"
+#include <string.h>
+
 #define NUM_ROWS    10
 typedef struct {
     uint8_t row;
@@ -44,18 +46,18 @@ void platform_init(void)
  * @param  s: The string to be printed
  * @retval None
  */
-void DebugPutString(uint8_t *s)
+void DebugPutString(char *s)
 {
-    LCD_ClearLine(LINE(devLCD.row));
-    LCD_DisplayStringLine(LINE(devLCD.row), s);
+    //LCD_ClearLine(LINE(devLCD.row));
+    LCD_DisplayStringLine(LINE(devLCD.row), (uint8_t *)s);
     devLCD.row = (devLCD.row + 1) % NUM_ROWS;
+    LCD_ClearLine(LINE(devLCD.row));
 }
 
-void DebugPutString1(uint8_t *s, uint32_t n)
+void DebugPutString1(char *s, uint32_t n)
 {
-    uint8_t *p;
-    uint8_t buf[20];
-    p = strncpy(buf, s, 20);
+    char buf[20];
+    strncpy(buf, s, 20);
     AppendInt2HexString(buf, n, 20);
     DebugPutString(buf);
 }

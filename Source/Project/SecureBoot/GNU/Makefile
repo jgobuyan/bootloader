@@ -71,7 +71,7 @@ CSRC =
 TOPDIR = ../../..
 LIBDIR = ${TOPDIR}/Libraries/CMSIS
 STDPERIPHDIR = ${TOPDIR}/Libraries/${CHIP}_StdPeriph_Driver
-
+SECDIR = ${TOPDIR}/Libraries/Security
 # List of all Library files
 LIBSRC =
 LIBSRC += ${STDPERIPHDIR}/src/${CHIP_PREFIX}_adc.c
@@ -107,7 +107,11 @@ IAPSRC += ${IAPDIR}/src/system_${CHIP_PREFIX}.c
 IAPSRC += ${IAPDIR}/src/platform_${CHIP_PREFIX}.c
 IAPSRC += ${IAPDIR}/src/debug.c
 IAPSRC += ${IAPDIR}/src/main.c
-#IAPSRC += ${IAPDIR}/src/menu.c
+IAPSRC += ${IAPDIR}/src/mbfuncboot.c
+IAPSRC += ${IAPDIR}/src/crc32.c
+IAPSRC += ${IAPDIR}/src/encryption.c
+
+IAPSRC += ${SECDIR}/src/blowfish.c
 
 #List of all Utility files
 # TODO: Use custom board files instead
@@ -119,7 +123,7 @@ LDSCRIPT= STM32F373VC_FLASH.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(LIBSRC) $(IAPSRC) $(UTILSRC)
+CSRC = $(LIBSRC) $(IAPSRC) $(UTILSRC) build_version.c
 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -157,7 +161,8 @@ INCDIR += $(IAPDIR)/inc
 INCDIR += $(UTILDIR)/STM32_EVAL/${PLATFORM}
 INCDIR += $(UTILDIR)/STM32_EVAL/Common
 INCDIR += $(STDPERIPHDIR)/inc
-
+INCDIR += $(TOPDIR)/common/inc
+INCDIR += $(SECDIR)/inc
 #
 # Project, sources and paths
 ##############################################################################
@@ -254,3 +259,10 @@ endif
 
 include modbus.mk
 include rules.mk
+
+build_version.c: FORCE
+	@echo "#include \"bootloader.h\"" > build_version.c
+	@echo "#include \"fwheader.h\"" > build_version.c
+	@echo "fwInfo __fwinfo = { .magic = FW_MAGIC, .version = \"Bootloader `date +%Y-%b-%d`\" };" >> build_version.c
+
+FORCE:

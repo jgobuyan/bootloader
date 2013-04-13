@@ -12,7 +12,7 @@
  * @param intnum
  */
 
-void AppendInt2HexString(uint8_t* str, uint32_t n, uint32_t size)
+void AppendInt2HexString(char *str, uint32_t n, uint32_t size)
 {
     uint8_t i;
     uint32_t len = 0;

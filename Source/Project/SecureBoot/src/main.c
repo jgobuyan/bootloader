@@ -26,15 +26,19 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "menu.h"
+#include "common.h"
+#include "flash_if.h"
 #include "mb.h"
 #include "platform.h"
-
+#include "bootloader.h"
+#include "flashmap.h"
 /** @addtogroup STM32F3xx_IAP
  * @{
  */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef  void (*pFunction)(void);
+
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -75,6 +79,8 @@ int main(void)
 
         /* Launch Modbus */
         ( void ) eMBInit(MB_RTU, 0x01, 0, 115200, MB_PAR_EVEN);
+        mbBootInit();
+
         ( void ) eMBEnable(  );
 
     }
@@ -83,15 +89,15 @@ int main(void)
     else
     {
         /* Test if user code is programmed starting from address "APPLICATION_ADDRESS" */
-        if (((*(__IO uint32_t*) APPLICATION_ADDRESS ) & 0x2FFE0000)
+        if (((*(__IO uint32_t*) FLASH_BANKA_BASE ) & 0x2FFE0000)
                 == 0x20000000)
         {
             /* Jump to user application */
-            JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
+            JumpAddress = *(__IO uint32_t*) (FLASH_BANKA_BASE + 4);
             Jump_To_Application = (pFunction) JumpAddress;
 
             /* Initialize user application's Stack Pointer */
-            __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
+            __set_MSP(*(__IO uint32_t*) FLASH_BANKA_BASE);
 
             /* Jump to application */
             Jump_To_Application();

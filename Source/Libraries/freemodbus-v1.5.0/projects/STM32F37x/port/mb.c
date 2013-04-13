@@ -376,15 +376,15 @@ eMBPoll( void )
             break;
 
         case EV_EXECUTE:
-            DEBUG_PUTSTRING("Rx Execute");
             ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
+            DEBUG_PUTSTRING1("Rx Execute: ", ucFunctionCode);
             eException = MB_EX_ILLEGAL_FUNCTION;
             for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
             {
                 /* No more function handlers registered. Abort. */
                 if( xFuncHandlers[i].ucFunctionCode == 0 )
                 {
-                    DEBUG_PUTSTRING("Command not found");
+                    DEBUG_PUTSTRING1("IllegCmd: ", ucFunctionCode);
                     break;
                 }
                 else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )

@@ -1,0 +1,2 @@
+../antithread/alloc-Makefile: ../../antithread/alloc/_info
+../../antithread/alloc.o:

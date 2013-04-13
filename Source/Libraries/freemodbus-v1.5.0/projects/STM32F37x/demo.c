@@ -64,6 +64,10 @@ eMBErrorCode
 eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs,
                  eMBRegisterMode eMode )
 {
+    (void)pucRegBuffer;
+    (void)usAddress;
+    (void)usNRegs;
+    (void)eMode;
     return MB_ENOERR;
 }
 

@@ -30,5 +30,6 @@ INCDIR += $(MBDIR)/functions
 INCDIR += $(MBDIR)/include
 INCDIR += $(MBDIR)/rtu
 INCDIR += $(MBDIR)/tcp
+INCDIR += $(MODBUSDIR)/projects/common/inc
 
 CSRC += $(PORTSRC) $(MBSRC)

@@ -30,6 +30,8 @@
 #define __FLASH_IF_H
 
 /* Includes ------------------------------------------------------------------*/
+#include "port.h"
+#include "flashmap.h"
 #ifdef STM32F37X
   #include "stm32f37x.h"
 #endif  /* STM32F37X */
@@ -47,21 +49,21 @@
 
 /* define the address from where user application will be loaded,
    the application address should be a start sector address */
-#define APPLICATION_ADDRESS     (uint32_t)0x08003000
+//#define APPLICATION_ADDRESS     (uint32_t)0x08003000
 
 /* Get the number of pages from where the user program will be loaded */
-#define  FLASH_PAGE_NUMBER      (uint32_t)((APPLICATION_ADDRESS - 0x08000000) >> 12)
+#define  FLASH_PAGE_NUMBER      (uint32_t)((FLASH_BANKA_BASE - 0x08000000) >> 12)
 
 /* Compute the mask to test if the Flash memory, where the user program will be
    loaded, is write protected */
 #define  FLASH_PROTECTED_PAGES   ((uint32_t)~((1 << FLASH_PAGE_NUMBER) - 1))
 
 /* define the user application size */
-#define USER_FLASH_SIZE   (USER_FLASH_END_ADDRESS - APPLICATION_ADDRESS + 1)
+#define USER_FLASH_SIZE   (USER_FLASH_END_ADDRESS - FLASH_BANKA_BASE + 1)
 
 /* Exported functions ------------------------------------------------------- */
 void FLASH_If_Init(void);
-uint32_t FLASH_If_Erase(uint32_t StartSector);
+uint32_t FLASH_If_Erase(uint32_t StartSector, uint32_t Size);
 uint32_t FLASH_If_Write(__IO uint32_t* FlashAddress, uint32_t* Data, uint16_t DataLength);
 uint32_t FLASH_If_DisableWriteProtection(void);
 uint32_t FLASH_If_GetWriteProtectionStatus(void);

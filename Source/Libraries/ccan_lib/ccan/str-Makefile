@@ -1,0 +1,2 @@
+ccan/str-Makefile: ccan/str/debug.c ccan/str/str.c ccan/str/str.h ccan/str/str_debug.h ccan/str/_info
+ccan/str.o: ccan/str/debug.o ccan/str/str.o

@@ -55,7 +55,13 @@ SECTIONS
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
-    . = ALIGN(4);
+    . = ALIGN(512);
+  } >FLASH
+  
+  .version_id :
+  {
+    _version = .;
+    KEEP(build/obj/build_version.o(.data.*)) /* firmware header for bootloader */
   } >FLASH
 
   /* The program code and other data goes into FLASH */

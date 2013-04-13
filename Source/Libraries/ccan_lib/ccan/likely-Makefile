@@ -1,0 +1,2 @@
+ccan/likely-Makefile: ccan/likely/likely.c ccan/likely/likely.h ccan/likely/_info
+ccan/likely.o: ccan/likely/likely.o

@@ -66,6 +66,7 @@ xMBPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,
     USART_Cmd(USART, ENABLE);
     USART_StructInit(&USART_InitStruct);
     USART_InitStruct.USART_BaudRate = ulBaudRate;
+    ucPORT = ucPORT; /* keeps compiler happy */
     switch (ucDataBits)
     {
     case 7:
@@ -189,7 +190,20 @@ void prvvUARTRxISR( void )
         bErr = TRUE;
         USART_ClearFlag(USART, USART_FLAG_PE);
     }
-    pxMBFrameCBByteReceived(  );
+    if (USART_GetFlagStatus(USART, USART_FLAG_ORE))
+    {
+        bErr = TRUE;
+        USART_ClearFlag(USART, USART_FLAG_ORE);
+    }
+    if (!bErr)
+    {
+        pxMBFrameCBByteReceived(  );
+    }
+    else
+    {
+        /* Error occurred. Read and discard byte */
+        (void)USART_ReceiveData(USART);
+    }
 }
 
 void USART_RxTimeoutInterruptCmd( FunctionalState newstate )

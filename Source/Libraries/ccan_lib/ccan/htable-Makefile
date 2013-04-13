@@ -1,0 +1,2 @@
+ccan/htable-Makefile: ccan/htable/htable.c ccan/htable/htable.h ccan/htable/htable_type.h ccan/htable/_info
+ccan/htable.o: ccan/htable/htable.o

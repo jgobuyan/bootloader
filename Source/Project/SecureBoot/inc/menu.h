@@ -30,7 +30,7 @@
 #define __MENU_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "common.h"
+#include "menu.h"
 #include "flash_if.h"
 #include "ymodem.h"
 

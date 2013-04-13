@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    STM32F3xx_IAP/src/flash_if.c 
+  * @file    SecureBoot/src/flash_if.c
   * @author  MCD Application Team
   * @version V1.0.0
   * @date    02-October-2012
@@ -24,11 +24,11 @@
   *
   ******************************************************************************
   */  
-
+/* Modified for Genist */
 /* Includes ------------------------------------------------------------------*/
 #include "flash_if.h"
 
-/** @addtogroup STM32F3xx_IAP
+/** @addtogroup SecureBoot
   * @{
   */
   
@@ -54,18 +54,19 @@ void FLASH_If_Init(void)
 }
 
 /**
-  * @brief  This function does an erase of all user flash area
+  * @brief  This function does an erase of a bank.
   * @param  StartSector: start of user flash area
+  * @param  Size: size of user flash area
   * @retval 0: user flash area successfully erased
   *         1: error occurred
   */
-uint32_t FLASH_If_Erase(uint32_t StartSector)
+uint32_t FLASH_If_Erase(uint32_t StartSector, uint32_t Size)
 {
   uint32_t flashaddress;
   
   flashaddress = StartSector;
   
-  while (flashaddress <= (uint32_t) USER_FLASH_LAST_PAGE_ADDRESS)
+  while (flashaddress < StartSector + Size)
   {
     if (FLASH_ErasePage(flashaddress) == FLASH_COMPLETE)
     {

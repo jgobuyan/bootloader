@@ -1,0 +1,2 @@
+ccan/ilog-Makefile: ccan/ilog/ilog.c ccan/ilog/ilog.h ccan/ilog/_info
+ccan/ilog.o: ccan/ilog/ilog.o

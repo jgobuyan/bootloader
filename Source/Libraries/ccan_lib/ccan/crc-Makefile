@@ -1,0 +1,2 @@
+ccan/crc-Makefile: ccan/crc/crc.c ccan/crc/crc.h ccan/crc/_info
+ccan/crc.o: ccan/crc/crc.o
