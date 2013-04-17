@@ -29,6 +29,7 @@ typedef enum
     BOOT_BADBLKNUM = 0x04,
     BOOT_BADSIG = 0x05,
     BOOT_ERROR = 0x06,
+    BOOT_UNVALIDATED = 0x07,
     BOOT_EXIT = 0xfd,
     BOOT_TIMEOUT = 0xfe,
     BOOT_INVALID = 0xff,

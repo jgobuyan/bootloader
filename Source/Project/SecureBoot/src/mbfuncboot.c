@@ -90,9 +90,9 @@ UCHAR ucCheckImage(fwHeader *pHdr)
         {
             ret = BOOT_BADDCRC;
         }
-        else if (pHdr->seqNum >= SEQNUM_MASK)
+        else if (pHdr->seqNum > SEQNUM_MASK)
         {
-            ret = BOOT_INVALID;
+            ret = BOOT_UNVALIDATED;
         }
     }
     return ret;
@@ -186,30 +186,36 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
     if (*usLen == MB_FUNC_BOOT_PREPAREFLASH_SIZE)
     {
         /* Check if the bank number is valid */
-        if (!ucCheckImage(pHdrA))
+        if (ucCheckImage(pHdrA))
         {
+            DEBUG_PUTSTRING("Bank A Invalid\n");
             ucCurrentBank = BANK_A;
-            if (pHdrB->seqNum == FLASH_EMPTY)
+            if (ucCheckImage(pHdrB))
             {
+                DEBUG_PUTSTRING("Bank B Invalid\n");
                 /* Both banks are empty. Use A and start from 0 */
                 ulCurrentSeqNum = 0;
             }
             else
             {
+                DEBUG_PUTSTRING("Bank B Valid\n");
                 /* Bank B is valid, Bank A is empty */
                 ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
             }
         }
         else
         {
-            if (!ucCheckImage(pHdrB))
+            DEBUG_PUTSTRING("Bank A Valid\n");
+            if (ucCheckImage(pHdrB))
             {
                 /* Bank A is valid, Bank B is empty */
+                DEBUG_PUTSTRING("Bank B Invalid\n");
                 ucCurrentBank = BANK_B;
-                ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
             }
             else
             {
+                DEBUG_PUTSTRING("Bank B Valid\n");
                 /* Both banks are valid. Compare seqNums and use the older one */
                 if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
                 {
@@ -295,7 +301,7 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
     eMBException eStatus = MB_EX_NONE;
     fwHeader *pHdr = (fwHeader *)Bank[ucCurrentBank].addr;
     ULONG ulAddr = (ULONG)Bank[ucCurrentBank].addr;
-    ULONG ulCrc;
+    UCHAR ucImageStatus;
     if (*usLen == MB_FUNC_BOOT_VALIDATEIMAGE_SIZE)
 
     {
@@ -303,35 +309,20 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
         {
             pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_INVALID;
         }
-        else if (pHdr->info.magic != FW_MAGIC)
-        {
-            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BANKEMPTY;
-        }
         else
         {
-            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_INVALID;
-            /* Check header CRC */
-            ulCrc = crc32(&pHdr->info, sizeof(fwInfo) - sizeof(ULONG));
-            if(ulCrc != pHdr->info.hcrc)
+            ucImageStatus = ucCheckImage(pHdr);
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = ucImageStatus;
+            if (ucImageStatus == BOOT_UNVALIDATED)
             {
-                DEBUG_PUTSTRING1("Bad HCRC: ", ulCrc);
-                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADHCRC;
-
-            }
-            else
-            {
-                ulCrc = crc32(pHdr + 1, pHdr->info.length);
-                if(ulCrc != pHdr->info.dcrc)
-                {
-                    DEBUG_PUTSTRING1("Bad DCRC: ", ulCrc);
-                    pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADDCRC;
-                }
-                else if (!validate_signature(pHdr))
+#if 0
+                if (validate_signature(pHdr))
                 {
                     DEBUG_PUTSTRING("Bad Signature");
                     pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADSIG;
                 }
                 else
+#endif
                 {
                     DEBUG_PUTSTRING("Image OK");
                     pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
@@ -339,7 +330,6 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
                     FLASH_If_Write(&ulAddr, &ulCurrentSeqNum, 1);
                 }
             }
-
         }
     }
     else

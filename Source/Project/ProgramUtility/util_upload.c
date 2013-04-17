@@ -100,6 +100,17 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         if (!ret)
         {
             printf ("\nUpload Complete.\n");
+
+            retry = 3;
+            while (cmd_validatesig(ucMBaddr) != BOOT_OK)
+            {
+                if ((--retry) == 0)
+                {
+                    fprintf(stderr, "Validation failed: too many retries\n");
+                    ret = TRUE;
+                    break;
+                }
+            }
         }
     }
     else

@@ -49,7 +49,8 @@ BOOL validate_signature (fwHeader *pHdr )
     UCHAR modulus[8] = {1,2,3,4,5,6,7,8};
     UCHAR pub_exp[8] = {8,7,6,5,4,3,2,1};
     RSA_pub_key_new(&rsa_context, modulus, 8, pub_exp, 8);
-    len = RSA_decrypt(rsa_context, (const UCHAR *)pHdr, out_data, FALSE);
+    //len = RSA_decrypt(rsa_context, (const UCHAR *)pHdr, out_data, FALSE);
+    RSA_free(rsa_context);
     return TRUE;
 #else
     return TRUE;

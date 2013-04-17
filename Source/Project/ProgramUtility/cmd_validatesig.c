@@ -11,23 +11,24 @@
 #include "commands.h"
 #include "platform.h"
 /**
- * Send Get Header request
+ * Send Validate Image request
  */
-void cmd_validatesig(UCHAR ucMBaddr)
+UCHAR cmd_validatesig(UCHAR ucMBaddr)
 {
     UCHAR    buf[8];
     cmdFrameHeader *pFrame = (cmdFrameHeader *)buf;
     DEBUG_PUTSTRING("VALIDATE_SIG");
     pFrame->mbAddr = ucMBaddr;
-    pFrame->cmdId = MB_FUNC_BOOT_GETHEADER;
+    pFrame->cmdId = MB_FUNC_BOOT_VALIDATEIMAGE;
     pFrame->subcmdId = 0;
     pFrame->status = 0;
     cmd_start();
-    eMBSendFrame(buf, MB_FUNC_BOOT_GETHEADER_REQ_SIZE + 1);
+    eMBSendFrame(buf, MB_FUNC_BOOT_VALIDATEIMAGE_SIZE + 1);
+    return cmd_status_wait();
 }
 
 /**
- * Process Get Header response
+ * Process Get Validate Image response
  * @param pucFrame
  * @param pusLength
  * @return
@@ -43,7 +44,7 @@ cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength )
         printf ("Validate OK\n");
         break;
     default:
-        printf ("Validate failed\n");
+        printf ("Validate failed: %d\n", pFrame->status);
         break;
     }
     cmd_done(pFrame->status);
