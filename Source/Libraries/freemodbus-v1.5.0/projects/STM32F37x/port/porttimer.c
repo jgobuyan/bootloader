@@ -42,7 +42,7 @@ extern void USART_RxTimeoutInterruptCmd( FunctionalState newstate );
 BOOL
 xMBPortTimersInit( USHORT usTim1Timerout50us )
 {
-    usTim1Timerout50us = usTim1Timerout50us;
+    (void)usTim1Timerout50us;
     return FALSE;
 }
 

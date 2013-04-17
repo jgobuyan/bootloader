@@ -16,7 +16,7 @@ uint32_t crc32(const void *buf, ULONG size)
 {
     USHORT i;
     ULONG crc;
-    UCHAR *pBuf = buf;
+    const UCHAR *pBuf = buf;
     /* Initialize CRC engine */
     CRC_DeInit();
     CRC_PolynomialSizeSelect(CRC_PolSize_32);

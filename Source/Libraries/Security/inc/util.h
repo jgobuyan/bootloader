@@ -89,6 +89,7 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 #define BUG() g10_log_bug0(  __FILE__ , __LINE__, __func__ )
 #endif
 #else
+#ifndef CFG_EMBEDDED
   void g10_log_bug( const char *fmt, ... );
   void g10_log_bug0( const char *, int );
   void g10_log_fatal( const char *fmt, ... );
@@ -97,6 +98,16 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
   void g10_log_warning( const char *fmt, ... );
   void g10_log_debug( const char *fmt, ... );
 #define BUG() g10_log_bug0( __FILE__ , __LINE__ )
+#else
+#define g10_log_bug( ... )
+#define g10_log_bug0( ... )
+#define g10_log_fatal( ... )
+#define g10_log_error( ... )
+#define g10_log_info( ... )
+#define g10_log_warning( ... )
+#define g10_log_debug( ... )
+#define BUG()
+#endif
 #endif
 
 #define log_hexdump g10_log_hexdump

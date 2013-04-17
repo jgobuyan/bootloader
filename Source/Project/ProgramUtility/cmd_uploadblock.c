@@ -14,6 +14,7 @@
 
 void     display_bytes(void *buf, int len)
 {
+#if 0
     int i;
     unsigned char *pBuf = buf;
     for (i = 0; i < len; i++)
@@ -25,6 +26,7 @@ void     display_bytes(void *buf, int len)
         printf("%02x ", pBuf[i]);
     }
     printf("\n");
+#endif
 }
 /**
  * Send upload block request

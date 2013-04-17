@@ -19,6 +19,8 @@
 
 #ifndef G10_MEMORY_H
 #define G10_MEMORY_H
+/* JSG */
+#include "config.h"
 
 #ifdef M_DEBUG
 #ifndef STR
@@ -62,6 +64,7 @@ void *xmalloc_secure_clear( size_t n );
 void *xrealloc( void *a, size_t n );
 void xfree( void *p );
 void m_check( const void *a );
+
 /*void *m_copy( const void *a );*/
 char *xstrdup( const char * a);
 char *xtrystrdup (const char *a);
@@ -81,15 +84,22 @@ void secmem_term( void );
 void *secmem_malloc( size_t size );
 void *secmexrealloc( void *a, size_t newsize );
 void secmem_free( void *a );
+#if 0
 int  m_is_secure( const void *p );
+#else
+#define m_is_secure(n) (0)
+#endif
 void secmem_dump_stats(void);
 void secmem_set_flags( unsigned flags );
 unsigned secmem_get_flags(void);
 
-
+#ifndef CFG_EMBEDDED
 #define DBG_MEMORY    memory_debug_mode
 #define DBG_MEMSTAT   memory_stat_debug_mode
-
+#else
+#define DBG_MEMORY  0
+#define DBG_MEMSTAT 0
+#endif
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
 #define EXTERN_UNLESS_MAIN_MODULE extern
@@ -97,9 +107,10 @@ unsigned secmem_get_flags(void);
 #define EXTERN_UNLESS_MAIN_MODULE 
 #endif
 #endif
+#ifndef CFG_EMBEDDED
 EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
-
+#endif
 
 
 #endif /*G10_MEMORY_H*/

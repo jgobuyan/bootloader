@@ -36,5 +36,6 @@ typedef struct {
 #define BANK_B          2
 #define BANK_F          3
 
+fwHeader *getImageHeader(UCHAR ucBank);
 
 #endif /* FWHEADER_H_ */

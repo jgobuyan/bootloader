@@ -1086,3 +1086,5 @@ is intended for making fat binary builds on OS X. */
 #define glthread_once_singlethreaded  libintl_once_singlethreaded
 #define glthread_once_multithreaded   libintl_once_multithreaded
 
+/* JSG */
+#define EXTERN_UNLESS_MAIN_MODULE extern

@@ -48,7 +48,7 @@ typedef struct {
 } MD5_CONTEXT;
 
 
-static void
+void
 md5_init( MD5_CONTEXT *ctx )
 {
     ctx->A = 0x67452301;
@@ -72,6 +72,7 @@ md5_init( MD5_CONTEXT *ctx )
 #define FH(b, c, d) (b ^ c ^ d)
 #define FI(b, c, d) (c ^ (b | ~d))
 
+#ifndef CFG_EMBEDDED
 static void
 burn_stack (int bytes)
 {
@@ -82,7 +83,9 @@ burn_stack (int bytes)
     if (bytes > 0)
         burn_stack (bytes);
 }
-
+#else
+#define burn_stack(x)
+#endif
 
 
 /****************
@@ -218,13 +221,11 @@ transform( MD5_CONTEXT *ctx, byte *data )
     ctx->D += D;
 }
 
-
-
 /* The routine updates the message-digest context to
  * account for the presence of each of the characters inBuf[0..inLen-1]
  * in the message whose digest is being computed.
  */
-static void
+void
 md5_write( MD5_CONTEXT *hd, byte *inbuf, size_t inlen)
 {
     if( hd->count == 64 ) { /* flush the buffer */
@@ -263,7 +264,7 @@ md5_write( MD5_CONTEXT *hd, byte *inbuf, size_t inlen)
  * Returns 16 bytes representing the digest.
  */
 
-static void
+void
 md5_final( MD5_CONTEXT *hd )
 {
     u32 t, msb, lsb;
@@ -324,12 +325,13 @@ md5_final( MD5_CONTEXT *hd )
 
 }
 
-static byte *
+byte *
 md5_read( MD5_CONTEXT *hd )
 {
     return hd->buf;
 }
 
+#ifdef CFG_GETINFO
 /****************
  * Return some information about the algorithm.  We need algo here to
  * distinguish different flavors of the algorithm.
@@ -363,3 +365,4 @@ md5_get_info( int algo, size_t *contextsize,
 
     return "MD5";
 }
+#endif

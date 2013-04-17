@@ -72,6 +72,7 @@ TOPDIR = ../../..
 LIBDIR = ${TOPDIR}/Libraries/CMSIS
 STDPERIPHDIR = ${TOPDIR}/Libraries/${CHIP}_StdPeriph_Driver
 SECDIR = ${TOPDIR}/Libraries/Security
+CCANDIR = ${TOPDIR}/Libraries/ccan_lib
 # List of all Library files
 LIBSRC =
 LIBSRC += ${STDPERIPHDIR}/src/${CHIP_PREFIX}_adc.c
@@ -112,6 +113,34 @@ IAPSRC += ${IAPDIR}/src/crc32.c
 IAPSRC += ${IAPDIR}/src/encryption.c
 
 IAPSRC += ${SECDIR}/src/blowfish.c
+
+SIGNSRC =
+SIGNSRC += ${SECDIR}/src/dsa.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-add.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-bit.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-cmp.c
+SIGNSRC += ${SECDIR}/src/mpi/mpicoder.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-div.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-gcd.c
+SIGNSRC += ${SECDIR}/src/mpi/mpih-cmp.c
+SIGNSRC += ${SECDIR}/src/mpi/mpih-div.c
+SIGNSRC += ${SECDIR}/src/mpi/mpih-mul.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-inline.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-inv.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-mpow.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-mul.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-pow.c
+SIGNSRC += ${SECDIR}/src/mpi/mpi-scan.c
+SIGNSRC += ${SECDIR}/src/mpi/mpiutil.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-add1.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-lshift.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-mul1.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-mul2.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-mul3.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-rshift.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/mpih-sub1.c
+SIGNSRC += ${SECDIR}/src/mpi/generic/udiv-w-sdiv.c
+SIGNSRC += ${SECDIR}/src/xmalloc.c
 
 #List of all Utility files
 # TODO: Use custom board files instead
@@ -163,6 +192,13 @@ INCDIR += $(UTILDIR)/STM32_EVAL/Common
 INCDIR += $(STDPERIPHDIR)/inc
 INCDIR += $(TOPDIR)/common/inc
 INCDIR += $(SECDIR)/inc
+#INCDIR += $(SECDIR)/${CHIP}_port
+#INCDIR += $(SECDIR)/src/mpi
+#INCDIR += $(SECDIR)/src/mpi/generic
+INCDIR += $(SECDIR)/axTLS/crypto
+INCDIR += $(SECDIR)/axTLS/ports/STM32_port
+INCDIR += $(CCANDIR)/ccan/antithread/alloc
+
 #
 # Project, sources and paths
 ##############################################################################
@@ -241,10 +277,10 @@ UADEFS =
 UINCDIR =
 
 # List the user directory to look for the libraries here
-ULIBDIR =
+ULIBDIR = $(SECDIR)/axTLS/ports/STM32_port $(CCANDIR)/$(CHIP)_port 
 
 # List all user libraries here
-ULIBS =
+ULIBS = -laxtls -lccan 
 
 #
 # End of user defines

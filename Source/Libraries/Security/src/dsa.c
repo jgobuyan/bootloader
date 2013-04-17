@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,16 +43,17 @@ typedef struct {
     MPI x;	    /* secret exponent */
 } DSA_secret_key;
 
-
+#ifdef CFG_DSA_GENERATE
 static MPI gen_k( MPI q );
 static void test_keys( DSA_secret_key *sk, unsigned qbits );
 static int  check_secret_key( DSA_secret_key *sk );
 static void generate( DSA_secret_key *sk, unsigned nbits, unsigned qbits,
 		      MPI **ret_factors );
 static void sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
+#endif
 static int  verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
 
-
+#ifdef CFG_DSA_PROGRESS
 static void (*progress_cb) ( void *, int );
 static void *progress_cb_data;
 
@@ -72,9 +73,9 @@ progress( int c )
     else
 	fputc( c, stderr );
 }
+#endif
 
-
-
+#ifdef CFG_DSA_GENERATE
 /****************
  * Generate a random secret exponent k less than q
  */
@@ -306,7 +307,7 @@ sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
     mpi_free(kinv);
     mpi_free(tmp);
 }
-
+#endif
 
 /****************
  * Returns true if the signature composed from R and S is valid.
@@ -358,7 +359,7 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     return rc;
 }
 
-
+#ifdef CFG_DSA_GENERATE
 /*********************************************
  **************  interface  ******************
  *********************************************/
@@ -438,7 +439,7 @@ dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
     sign( resarr[0], resarr[1], data, &sk );
     return 0;
 }
-
+#endif
 int
 dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
 {
@@ -469,7 +470,7 @@ dsa_get_nbits( int algo, MPI *pkey )
     return mpi_get_nbits( pkey[0] );
 }
 
-
+#ifdef CFG_GETINFO
 /****************
  * Return some information about the algorithm.  We need algo here to
  * distinguish different flavors of the algorithm.
@@ -492,3 +493,4 @@ dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
       default: *use = 0; return NULL;
     }
 }
+#endif

@@ -55,4 +55,8 @@
 #define HAVE_TYPEOF 1
 #define HAVE_UTIME 1
 #define HAVE_WARN_UNUSED_RESULT 1
+
+/* JSG */
+#define CFG_EMBEDDED
+#define assert(x)
 #endif /* CCAN_CONFIG_H */

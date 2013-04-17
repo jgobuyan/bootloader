@@ -66,6 +66,11 @@ const flashPartition Bank[4] = {
         { (UCHAR *)FLASH_BANKF_BASE,  FLASH_BANK_SIZE   }
 };
 
+/**
+ * Check for valid image
+ * @param pHdr
+ * @return
+ */
 UCHAR ucCheckImage(fwHeader *pHdr)
 {
     UCHAR ret = BOOT_OK;
@@ -87,7 +92,7 @@ UCHAR ucCheckImage(fwHeader *pHdr)
         }
         else if (pHdr->seqNum >= SEQNUM_MASK)
         {
-            ret = BOOT_BANKEMPTY;
+            ret = BOOT_INVALID;
         }
     }
     return ret;
@@ -205,8 +210,8 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
             }
             else
             {
-                /* Both banks are valid. Compare seqNums */
-                if ((pHdrA->seqNum > pHdrB->seqNum) && (pHdrA->seqNum != SEQNUM_MASK))
+                /* Both banks are valid. Compare seqNums and use the older one */
+                if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
                 {
                     ucCurrentBank = BANK_B;
                     ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
@@ -343,6 +348,22 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
     }
     *usLen = MB_FUNC_BOOT_DEFAULT_RESP_SIZE;
     return eStatus;
+}
+
+/**
+ * Return pointer to image header if bank is valid.
+ * @param ucBank
+ * @return
+ */
+fwHeader *getImageHeader(UCHAR ucBank)
+{
+    fwHeader *ret = NULL;
+    if ((ucBank != BANK_BOOT) || (ucCheckImage((fwHeader *)Bank[ucBank].addr) == BOOT_OK))
+    {
+        ret = (fwHeader *) Bank[ucBank].addr;
+    }
+
+    return ret;
 }
 
 void mbBootInit(void)

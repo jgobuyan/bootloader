@@ -55,7 +55,7 @@ static int  check_secret_key( RSA_secret_key *sk );
 static void public(MPI output, MPI input, RSA_public_key *skey );
 static void secret(MPI output, MPI input, RSA_secret_key *skey );
 
-
+#ifdef CFG_GENERATE
 static void
 test_keys( RSA_secret_key *sk, unsigned nbits )
 {
@@ -390,7 +390,7 @@ rsa_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
     public( resarr[0], data, &pk );
     return 0;
 }
-
+#endif
 int
 rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 {
@@ -410,6 +410,7 @@ rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     return 0;
 }
 
+#ifdef CFG_GENERATE
 int
 rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 {
@@ -429,6 +430,7 @@ rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 
     return 0;
 }
+#endif
 
 int
 rsa_verify( int algo, MPI hash, MPI *data, MPI *pkey )
@@ -458,7 +460,7 @@ rsa_get_nbits( int algo, MPI *pkey )
     return mpi_get_nbits( pkey[0] );
 }
 
-
+#ifdef CFG_GETINFO
 /****************
  * Return some information about the algorithm.  We need algo here to
  * distinguish different flavors of the algorithm.
@@ -483,3 +485,4 @@ rsa_get_info( int algo,
       default:*r_usage = 0; return NULL;
     }
 }
+#endif

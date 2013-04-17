@@ -697,7 +697,8 @@ static COLD unsigned long huge_size(struct header *head, void *p)
 			return ha->len;
 		}
 	}
-	abort();
+	//abort();
+	while(1);
 }
 
 void *alloc_get(void *pool, unsigned long poolsize,
@@ -1187,6 +1188,7 @@ static unsigned long visualize_bucket(FILE *out, struct header *head,
 	return overhead;
 }
 
+#ifndef CFG_EMBEDDED
 void alloc_visualize(FILE *out, void *pool, unsigned long poolsize)
 {
 	struct header *head = pool;
@@ -1237,3 +1239,4 @@ void alloc_visualize(FILE *out, void *pool, unsigned long poolsize)
 
 	print_overhead(out, "total", overhead, poolsize);
 }
+#endif

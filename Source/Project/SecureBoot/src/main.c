@@ -32,6 +32,8 @@
 #include "platform.h"
 #include "bootloader.h"
 #include "flashmap.h"
+#include "fwHeader.h"
+
 /** @addtogroup STM32F3xx_IAP
  * @{
  */
@@ -57,6 +59,10 @@ static void SecureBoot_Init(void);
  */
 int main(void)
 {
+    fwHeader *pHdrA;
+    fwHeader *pHdrB;
+    fwHeader *pHdr;
+
     /*!< At this stage the microcontroller clock setting is already configured,
      this is done through SystemInit() function which is called from startup
      file (startup_stm32f37x.s/startup_stm32f30x.s) before to branch to
@@ -66,11 +72,44 @@ int main(void)
     /* Initialize the platform */
     platform_init();
     DEBUG_PUTSTRING("HELLO!");
+    pHdrA = getImageHeader(BANK_A);
+    pHdrB = getImageHeader(BANK_B);
+
+    if (!pHdrA && !pHdrB)
+    {
+        /* Both upgrade banks are invalid. Check factory load as well */
+        pHdr = getImageHeader(BANK_F);
+    }
+    else if (pHdrA && pHdrB)
+    {
+        /* Both upgrade banks are valid. Pick the one with the higher
+         * sequence number
+         */
+        if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
+        {
+            pHdr = pHdrA;
+        }
+        else
+        {
+            pHdr = pHdrB;
+        }
+    }
+    else if (pHdrA && !pHdrB)
+    {
+        /* A is valid, B is not */
+        pHdr = pHdrA;
+    }
+    else
+    {
+        /* B is valid, A is not */
+        pHdr = pHdrB;
+    }
+
     /* Initialize Key Button mounted on STM320518-EVAL board */
     STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO);
 
-    /* Test if Key push-button on STM320518-EVAL Board is pressed */
-    if (STM_EVAL_PBGetState(BUTTON_KEY) == 0x00)
+    /* If no valid loads or  key push-button on STM320518-EVAL Board is pressed */
+    if (!pHdr || STM_EVAL_PBGetState(BUTTON_KEY) == 0x00)
     {
         /* If Key is pressed, execute the IAP driver in order to re-program the Flash */
         SecureBoot_Init();
@@ -89,16 +128,16 @@ int main(void)
     else
     {
         /* Test if user code is programmed starting from address "APPLICATION_ADDRESS" */
-        if (((*(__IO uint32_t*) FLASH_BANKA_BASE ) & 0x2FFE0000)
+        if (((*(__IO uint32_t*) &pHdr[1] ) & 0x2FFE0000)
                 == 0x20000000)
         {
             /* Jump to user application */
-            JumpAddress = *(__IO uint32_t*) (FLASH_BANKA_BASE + 4);
+            JumpAddress = *(__IO uint32_t*) &pHdr[1] + 4;
             Jump_To_Application = (pFunction) JumpAddress;
 
             /* Initialize user application's Stack Pointer */
-            __set_MSP(*(__IO uint32_t*) FLASH_BANKA_BASE);
-
+            __set_MSP(*(__IO uint32_t*) &pHdr[1]);
+            NVIC_SetVectorTable(NVIC_VectTab_FLASH, sizeof(fwHeader));
             /* Jump to application */
             Jump_To_Application();
         }

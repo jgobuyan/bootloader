@@ -15,7 +15,7 @@
 #include "port.h"
 #include "bootloader.h"
 #include "commands.h"
-
+#include "platform.h"
 int util_upload(UCHAR ucMBaddr, char *infile)
 {
     int fdin;
@@ -56,37 +56,50 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         /* Do whole blocks first to avoid going over the end of mmap */
         while (index < len)
         {
-            printf("Block %d\r", index);
+            DEBUG_PUTSTRING1("Block ", index);
             retry = 3;
             while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
             {
                 if ((--retry) == 0)
                 {
-                    fprintf(stderr, "Too many retries at block %d\n", index);
+                    fprintf(stderr, "Too many retries at block %d\n",
+                            index / UPLOAD_BLOCK_SIZE);
                     ret = TRUE;
                     break;
                 }
+                printf("R");
             }
             if (ret)
             {
                 break;
             }
+            printf("*");
+            fflush(stdout);
             index += UPLOAD_BLOCK_SIZE;
         }
         if (!ret && (len < sb.st_size))
         {
-            printf("Block %d\r", index);
-            if (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
+            retry = 3;
+            DEBUG_PUTSTRING1("Block ", index / UPLOAD_BLOCK_SIZE);
+            while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], sb.st_size - len) != BOOT_OK)
             {
-                fprintf(stderr, "Timeout waiting for block upload\n");
-                ret = TRUE;
+                if ((--retry) == 0)
+                {
+                    fprintf(stderr, "Too many retries at block %d\n",
+                            index / UPLOAD_BLOCK_SIZE);
+                    ret = TRUE;
+                    break;
+                }
             }
-            else
-            {
-                printf("Upload complete\n");
-            }
+            printf("*");
+            fflush(stdout);
+
+        }
+        if (!ret)
+        {
+            printf ("\nUpload Complete.\n");
         }
     }
     else

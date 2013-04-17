@@ -56,10 +56,8 @@ BOOL cmd_timeout_callback(void)
     return TRUE;
 }
 
-BOOL cmd_illegalfunc_callback( UCHAR * pucFrame, USHORT * pusLength )
+BOOL cmd_illegalfunc_callback(void )
 {
-    (void)pucFrame;
-    (void)pusLength;
     ucCmd_status = BOOT_INVALID;
     xCmd_in_progress = 0;
     return TRUE;

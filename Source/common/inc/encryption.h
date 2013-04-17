@@ -9,5 +9,6 @@
 #define ENCRYPTION_H_
 
 void block_decrypt(void *pData, uint32_t size);
+BOOL validate_signature (fwHeader *pHdr );
 
 #endif /* ENCRYPTION_H_ */

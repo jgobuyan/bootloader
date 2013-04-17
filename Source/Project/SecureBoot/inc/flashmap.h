@@ -18,13 +18,6 @@ typedef struct {
     ULONG size;
 } flashPartition;
 
-typedef struct {
-    UCHAR bf_key[256];
-    UCHAR sig_key[256];
-    ULONG bf_key_size;
-    ULONG sig_key_size;
-} flashKey;
-
 /* Flash Memory Map */
 #define VTABLE_SIZE         512
 #define FLASH_BOOT_BASE     0x08000000

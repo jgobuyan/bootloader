@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "config.h"
 
 /* One byte header, one byte data. */
 #define MIN_BLOCK_SIZE 2

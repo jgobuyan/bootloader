@@ -21,11 +21,15 @@ UCHAR cmd_status(void);
 UCHAR cmd_status_wait(void);
 BOOL cmd_in_progress(void);
 
-int util_addheader(char *infile, char *outfile, char *version, char *dsa_key,
-        char *bf_key);
+int util_addheader(char *infile, char *outfile, char *version, char *dsa_keystring,
+        char *bf_keystring);
 int util_checkheader(char *infile);
 int util_upload(UCHAR ucMBaddr, char *infile);
-void util_encrypt(UCHAR *pOutfile, ULONG size, UCHAR *bf_keystring);
+int util_set_rsakey(char *rsa_keyfile);
+void util_str2key(char *keystring, UCHAR *keyarray, ULONG *keylength);
+
+void util_encrypt(char *pOutfile, ULONG size, char *bf_keystring);
+void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile, char *bf_keystring);
 
 /* ModBus master commands */
 eMBErrorCode eMBSendFrame(UCHAR *ucMBFrame, USHORT usLength);

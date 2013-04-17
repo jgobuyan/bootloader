@@ -30,6 +30,7 @@
 #define FLAG_UPLOAD         0x00000008
 #define FLAG_ENCRYPT        0x00000010
 #define FLAG_SIGN           0x00000020
+#define FLAG_CREATE_KEYFILE 0x00000040
 
 /* ----------------------- Static variables ---------------------------------*/
 
@@ -42,8 +43,8 @@ static enum ThreadState
 
 static pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
 static BOOL     bDoExit;
-static UCHAR    *pucBlowfishKey = NULL;
-static UCHAR    *pucDSAKey = NULL;
+static CHAR    *pBlowfishKeyString = NULL;
+static CHAR    *pRSAKeyFile = NULL;
 
 /* ----------------------- Static functions ---------------------------------*/
 static BOOL     bCreatePollingThread( void );
@@ -91,13 +92,16 @@ void print_usage(void)
 {
     printf("Usage:\n\nprog_util <options> <infile> <outfile>\n\n");
     printf("-a <version-string> <infile> <outfile>  - add image header to binary\n");
+    printf("-e <key> -s <rsa-file> -k <outfile>     - create binary key file\n");
     printf("-c <file>                               - check image\n");
     printf("-v <bank>                               - query version\n");
     printf("-p <infile>                             - program flash\n");
     printf("\nOptions:\n");
-    printf("-e <key>                                - encryption key\n");
-    printf("-s <key>                                - signature key\n");
+    printf("-e <key>                                - Blowfish key\n");
+    printf("-s <rsa-file>                           - RSA key file (DER format)\n");
     printf("-D                                      - display debug\n");
+    printf("\nNotes:\n");
+    printf("Blowfish and RSA keys must be specified when -k is used.\n");
 }
 
 int
@@ -120,7 +124,7 @@ main( int argc, char *argv[] )
     /*
      * Process command line options
      */
-    while ((c = getopt(argc, argv, "a:ce:s:uv:D")) != -1)
+    while ((c = getopt(argc, argv, "a:ce:ks:uv:D")) != -1)
     {
         switch (c)
         {
@@ -131,13 +135,16 @@ main( int argc, char *argv[] )
         case 'c':
             ulOptFlags |= FLAG_CHECK_HEADER;
             break;
+        case 'k':
+            ulOptFlags |= FLAG_CREATE_KEYFILE;
+            break;
         case 'e':
             ulOptFlags |= FLAG_ENCRYPT;
-            pucBlowfishKey = optarg;
+            pBlowfishKeyString = optarg;
             break;
         case 's':
             ulOptFlags |= FLAG_SIGN;
-            pucDSAKey = optarg;
+            pRSAKeyFile = optarg;
             break;
         case 'u':
             ulOptFlags |= FLAG_UPLOAD;
@@ -178,6 +185,11 @@ main( int argc, char *argv[] )
         print_usage();
     }
 
+    if ((ulOptFlags & FLAG_ADD_HEADER) && (ulOptFlags & FLAG_CREATE_KEYFILE))
+    {
+        printf("Error: cannot specify both -a and -k options\n");
+        abort();
+    }
     /*
      * Enable signal handlers
      */
@@ -243,12 +255,26 @@ main( int argc, char *argv[] )
         {
             if (infile && outfile)
             {
-                util_addheader(infile, outfile, pucVersion, pucDSAKey, pucBlowfishKey);
+                util_addheader(infile, outfile, pucVersion, pRSAKeyFile, pBlowfishKeyString);
             }
             else
             {
                 fprintf(stderr, "Add Header: missing filenames\n");
             }
+        }
+        else if (ulOptFlags & FLAG_CREATE_KEYFILE)
+        {
+            if (infile)
+            {
+                //util_set_rsakey(pRSAKeyFile);
+                util_createkeyfile(infile, pRSAKeyFile, pBlowfishKeyString);
+                printf("AHAHAH\n");
+            }
+            else
+            {
+                fprintf(stderr, "Check Key: missing filenames\n");
+            }
+
         }
         if (ulOptFlags & FLAG_CHECK_HEADER)
         {

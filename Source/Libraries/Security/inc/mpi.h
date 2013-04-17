@@ -43,9 +43,10 @@
 #endif
 #endif
 
+#ifndef CFG_EMBEDDED
 #define DBG_MPI     mpi_debug_mode
 EXTERN_UNLESS_MAIN_MODULE int mpi_debug_mode;
-
+#endif
 
 struct gcry_mpi; 
 typedef struct gcry_mpi *MPI;

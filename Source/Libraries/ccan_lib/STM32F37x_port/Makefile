@@ -61,7 +61,7 @@ endif
 #
 
 # Define project name here
-PROJECT = ccanlib
+PROJECT = libccan
 # Imported source files and paths
 CSRC =
 SRCFILES += $(wildcard ../ccan/*/*.c) $(wildcard ../ccan/antithread/alloc/*.c)

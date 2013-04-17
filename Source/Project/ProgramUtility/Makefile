@@ -30,12 +30,14 @@ CFLAGS	    = -MD -g3 -Wall \
 	-I$(MBDIR)/modbus/include \
 	-I$(TOPDIR)/common/inc \
 	-I$(SECDIR)/inc \
+	-I$(SECDIR)/axTLS/ports/linux \
+	-I$(SECDIR)/axTLS/crypto \
+	-I$(SECDIR)/axTLS/ssl \
 	-I$(CCANDIR)/ccan \
 	-I$(CCANDIR)/ccan/crc \
 	-I.
 LDFLAGS     =
-LDLIBS		= 
-# -L$(CCANDIR)/linux -lccan
+LDLIBS		= -L$(SECDIR)/axTLS/ports/linux -laxtls
 LDFLAGS		= 
 ifeq ($(CYGWIN_BUILD),YES)
 else

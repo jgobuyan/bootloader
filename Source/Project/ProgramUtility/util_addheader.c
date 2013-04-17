@@ -10,10 +10,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #include "fwheader.h"
-#include "crc.h"
+#include "crc32.h"
 #include "bootloader.h"
+#include "commands.h"
 #define CRC_INIT_VALUE  0x00000000
 
 /**
@@ -25,7 +27,8 @@
  * @param bf_key - Blowfish encryption key. If NULL, no encryption is performed.
  * @return
  */
-int util_addheader(char *infile, char *outfile, char *version, char *dsa_key, char *bf_key)
+int util_addheader(char *infile, char *outfile, char *version,
+        char *rsa_keyfile, char *bf_keystring)
 {
     fwHeader header;
     int fdin;
@@ -58,10 +61,10 @@ int util_addheader(char *infile, char *outfile, char *version, char *dsa_key, ch
     strncpy(&header.info.version[0], version, VERSION_STRING_LENGTH);
     header.info.length = sb.st_size;
     header.info.dcrc = crc32(pInfile, sb.st_size);
-    printf("DCRC = %08x\n", header.info.dcrc);
+    printf("DCRC = %08lx\n", header.info.dcrc);
     header.info.hcrc = crc32((char *) &header.info,
             sizeof(fwInfo) - sizeof(ULONG));
-    printf("HCRC = %08x\n", header.info.hcrc);
+    printf("HCRC = %08lx\n", header.info.hcrc);
     write(fdout, &header, sizeof(header));
     write(fdout, pInfile, sb.st_size);
     munmap(pInfile, sb.st_size);
@@ -79,15 +82,17 @@ int util_addheader(char *infile, char *outfile, char *version, char *dsa_key, ch
             MAP_SHARED, fdout, 0);
 
     /* Add signature */
-    if (dsa_key)
+    if (rsa_keyfile)
     {
-        util_sign(pOutfile, dsa_key);
+        printf ("Signing...\n");
+        util_sign(pOutfile, rsa_keyfile);
     }
 
     /* Encrypt */
-    if (bf_key)
+    if (bf_keystring)
     {
-        util_encrypt(pOutfile, bf_key);
+        printf ("Encrypting...\n");
+        util_encrypt(pOutfile, len, bf_keystring);
     }
 
     munmap(pInfile, len);
