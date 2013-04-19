@@ -29,7 +29,7 @@ int util_set_rsakey(char *rsa_keyfile);
 void util_str2key(char *keystring, UCHAR *keyarray, ULONG *keylength);
 
 void util_encrypt(char *pOutfile, ULONG size, char *bf_keystring);
-void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile, char *bf_keystring);
+void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile);
 
 /* ModBus master commands */
 eMBErrorCode eMBSendFrame(UCHAR *ucMBFrame, USHORT usLength);

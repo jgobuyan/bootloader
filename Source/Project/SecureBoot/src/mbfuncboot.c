@@ -121,7 +121,7 @@ eMBException eMBFuncBootGetHeader(UCHAR * pucFrame, USHORT * usLen)
             memcpy(&pucFrame[MB_PDU_FUNC_BOOT_FWHEADER_OFF], &pFwHeader->info,
                     sizeof(fwInfo));
             *usLen = MB_FUNC_BOOT_GETHEADER_RESP_SIZE;
-#if 1
+
             if (ucBank != BANK_BOOT)
             {
                 pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = ucCheckImage(pFwHeader);
@@ -131,33 +131,6 @@ eMBException eMBFuncBootGetHeader(UCHAR * pucFrame, USHORT * usLen)
                 /* Bootloader does not have a full header */
                 pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
             }
-#else
-            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
-            if (pFwHeader->info.magic != FW_MAGIC)
-            {
-                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BANKEMPTY;
-            }
-            else
-            {
-                /* Don't calculate CRCs for bootloader */
-                if (ucBank != BANK_BOOT)
-                {
-                    if (crc32(&pFwHeader->info, sizeof(fwInfo) - 4)
-                            != pFwHeader->info.hcrc)
-
-                    {
-                        pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] =
-                                BOOT_BADHCRC;
-                    }
-                    else if ((crc32(&pFwHeader[1], pFwHeader->info.length)
-                            != pFwHeader->info.dcrc))
-                    {
-                        pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] =
-                                BOOT_BADDCRC;
-                    }
-                }
-            }
-#endif
         }
         else
         {
@@ -188,34 +161,34 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
         /* Check if the bank number is valid */
         if (ucCheckImage(pHdrA))
         {
-            DEBUG_PUTSTRING("Bank A Invalid\n");
+            DEBUG_PUTSTRING("Bank A Invalid");
             ucCurrentBank = BANK_A;
             if (ucCheckImage(pHdrB))
             {
-                DEBUG_PUTSTRING("Bank B Invalid\n");
+                DEBUG_PUTSTRING("Bank B Invalid");
                 /* Both banks are empty. Use A and start from 0 */
                 ulCurrentSeqNum = 0;
             }
             else
             {
-                DEBUG_PUTSTRING("Bank B Valid\n");
+                DEBUG_PUTSTRING("Bank B Valid");
                 /* Bank B is valid, Bank A is empty */
                 ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
             }
         }
         else
         {
-            DEBUG_PUTSTRING("Bank A Valid\n");
+            DEBUG_PUTSTRING("Bank A Valid");
             if (ucCheckImage(pHdrB))
             {
                 /* Bank A is valid, Bank B is empty */
-                DEBUG_PUTSTRING("Bank B Invalid\n");
+                DEBUG_PUTSTRING("Bank B Invalid");
                 ucCurrentBank = BANK_B;
                 ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
             }
             else
             {
-                DEBUG_PUTSTRING("Bank B Valid\n");
+                DEBUG_PUTSTRING("Bank B Valid");
                 /* Both banks are valid. Compare seqNums and use the older one */
                 if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
                 {
@@ -315,14 +288,13 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
             pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = ucImageStatus;
             if (ucImageStatus == BOOT_UNVALIDATED)
             {
-#if 0
+
                 if (validate_signature(pHdr))
                 {
                     DEBUG_PUTSTRING("Bad Signature");
                     pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADSIG;
                 }
                 else
-#endif
                 {
                     DEBUG_PUTSTRING("Image OK");
                     pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;

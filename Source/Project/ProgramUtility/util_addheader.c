@@ -39,6 +39,8 @@ int util_addheader(char *infile, char *outfile, char *version,
     struct stat sb;
 
     memset(&header, 0, sizeof(fwHeader));
+
+    /* Open original binary file */
     fdin = open(infile, O_RDONLY);
     if (fdin == -1)
     {
@@ -47,6 +49,7 @@ int util_addheader(char *infile, char *outfile, char *version,
     }
     fstat(fdin, &sb);
 
+    /* Open output image file */
     fdout = open(outfile, O_RDWR | O_CREAT, sb.st_mode);
     if (fdout == -1)
     {
@@ -65,12 +68,14 @@ int util_addheader(char *infile, char *outfile, char *version,
     header.info.hcrc = crc32((char *) &header.info,
             sizeof(fwInfo) - sizeof(ULONG));
     printf("HCRC = %08lx\n", header.info.hcrc);
+
+    /* Write header and binary file into output file */
     write(fdout, &header, sizeof(header));
     write(fdout, pInfile, sb.st_size);
     munmap(pInfile, sb.st_size);
     close(fdin);
 
-    /* Round up to next block size */
+    /* Pad up to next block size */
     len = sb.st_size + sizeof(header);
     while (len & (UPLOAD_BLOCK_SIZE - 1))
     {
@@ -85,7 +90,7 @@ int util_addheader(char *infile, char *outfile, char *version,
     if (rsa_keyfile)
     {
         printf ("Signing...\n");
-        util_sign(pOutfile, rsa_keyfile);
+        util_sign(pOutfile, len, rsa_keyfile);
     }
 
     /* Encrypt */

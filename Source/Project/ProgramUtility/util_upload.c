@@ -16,6 +16,14 @@
 #include "bootloader.h"
 #include "commands.h"
 #include "platform.h"
+#define NUM_RETRIES 5
+
+/**
+ * Upload file in blocks
+ * @param ucMBaddr
+ * @param infile
+ * @return
+ */
 int util_upload(UCHAR ucMBaddr, char *infile)
 {
     int fdin;
@@ -35,7 +43,11 @@ int util_upload(UCHAR ucMBaddr, char *infile)
     }
 
     fstat(fdin, &sb);
-    /* Round down to nearest block size */
+
+    /* Round down to nearest block size. The file should have been padded
+     * to the next 1K boundary at image creation time but ensure here just
+     * in case
+     */
     len = sb.st_size & ~(UPLOAD_BLOCK_SIZE - 1);
     pInfile = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fdin, 0);
 
@@ -57,7 +69,7 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         while (index < len)
         {
             DEBUG_PUTSTRING1("Block ", index);
-            retry = 3;
+            retry = NUM_RETRIES;
             while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
             {
@@ -69,6 +81,7 @@ int util_upload(UCHAR ucMBaddr, char *infile)
                     break;
                 }
                 printf("R");
+                fflush(stdout);
             }
             if (ret)
             {
@@ -80,7 +93,7 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         }
         if (!ret && (len < sb.st_size))
         {
-            retry = 3;
+            retry = NUM_RETRIES;
             DEBUG_PUTSTRING1("Block ", index / UPLOAD_BLOCK_SIZE);
             while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], sb.st_size - len) != BOOT_OK)
@@ -92,6 +105,8 @@ int util_upload(UCHAR ucMBaddr, char *infile)
                     ret = TRUE;
                     break;
                 }
+                printf("R");
+                fflush(stdout);
             }
             printf("*");
             fflush(stdout);
@@ -101,7 +116,7 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         {
             printf ("\nUpload Complete.\n");
 
-            retry = 3;
+            retry = NUM_RETRIES;
             while (cmd_validatesig(ucMBaddr) != BOOT_OK)
             {
                 if ((--retry) == 0)

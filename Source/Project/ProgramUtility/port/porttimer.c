@@ -123,7 +123,7 @@ void
 vMBPortMasterTimerEnable( ULONG ulTimeOutMSec  )
 {
     int             res = gettimeofday( &xMasterTimeLast, NULL );
-    ulMasterTimeOut = ulTimeOutMSec * 1000;
+    ulMasterTimeOut = ulTimeOutMSec;
     assert( res == 0 );
     bMasterTimeoutEnable = TRUE;
 }

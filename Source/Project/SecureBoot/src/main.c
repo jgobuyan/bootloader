@@ -50,6 +50,7 @@ uint32_t JumpAddress;
 /* Private function prototypes -----------------------------------------------*/
 static void SecureBoot_Init(void);
 
+extern void malloc_init(void);
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -162,6 +163,7 @@ void SecureBoot_Init(void)
 
     /* Unlock the Flash Program Erase controller */
     FLASH_If_Init();
+    malloc_init();
 
     /* USART resources configuration (Clock, GPIO pins and USART registers) ----*/
     /* USART configured as follow:

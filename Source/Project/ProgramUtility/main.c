@@ -31,6 +31,7 @@
 #define FLAG_ENCRYPT        0x00000010
 #define FLAG_SIGN           0x00000020
 #define FLAG_CREATE_KEYFILE 0x00000040
+#define FLAG_VALIDATE       0x80000000  /* Debug */
 
 /* ----------------------- Static variables ---------------------------------*/
 
@@ -45,7 +46,7 @@ static pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
 static BOOL     bDoExit;
 static CHAR    *pBlowfishKeyString = NULL;
 static CHAR    *pRSAKeyFile = NULL;
-
+static UCHAR    ucPort;
 /* ----------------------- Static functions ---------------------------------*/
 static BOOL     bCreatePollingThread( void );
 static enum ThreadState eGetPollingThreadState( void );
@@ -95,8 +96,9 @@ void print_usage(void)
     printf("-e <key> -s <rsa-file> -k <outfile>     - create binary key file\n");
     printf("-c <file>                               - check image\n");
     printf("-v <bank>                               - query version\n");
-    printf("-p <infile>                             - program flash\n");
+    printf("-u <infile>                             - upload and program flash\n");
     printf("\nOptions:\n");
+    printf("-p <port>                               - Serial port number\n");
     printf("-e <key>                                - Blowfish key\n");
     printf("-s <rsa-file>                           - RSA key file (DER format)\n");
     printf("-D                                      - display debug\n");
@@ -120,11 +122,11 @@ main( int argc, char *argv[] )
     char   *infile = NULL;
     char   *outfile = NULL;
     opterr = 0;
-
+    ucPort = 2; /* Default to first USB serial dongle */
     /*
      * Process command line options
      */
-    while ((c = getopt(argc, argv, "a:ce:ks:uv:D")) != -1)
+    while ((c = getopt(argc, argv, "a:ce:kp:s:uv:DV")) != -1)
     {
         switch (c)
         {
@@ -142,6 +144,9 @@ main( int argc, char *argv[] )
             ulOptFlags |= FLAG_ENCRYPT;
             pBlowfishKeyString = optarg;
             break;
+        case 'p':
+            ucPort = strtoul(optarg, NULL, 0);
+            break;
         case 's':
             ulOptFlags |= FLAG_SIGN;
             pRSAKeyFile = optarg;
@@ -157,6 +162,10 @@ main( int argc, char *argv[] )
             break;
         case 'D':
             debugflags = 1;
+            break;
+        case 'V':
+            ulOptFlags |= FLAG_VALIDATE;
+            ucStartThread = TRUE;
             break;
         case '?':
             if (optopt == 'v')
@@ -202,7 +211,7 @@ main( int argc, char *argv[] )
     else if (ucStartThread)
     {
         DEBUG_PUTSTRING("Starting MobBus thread");
-        if( eMBInit( MB_RTU, 0x0A, 2, 115200, MB_PAR_EVEN ) != MB_ENOERR )
+        if( eMBInit( MB_RTU, 0x0A, ucPort, 115200, MB_PAR_EVEN ) != MB_ENOERR )
         {
             fprintf( stderr, "%s: can't initialize modbus stack!\n", PROG );
             iExitCode = EXIT_FAILURE;
@@ -286,6 +295,10 @@ main( int argc, char *argv[] )
             {
                 fprintf(stderr, "Check Header: missing filename\n");
             }
+        }
+        if (ulOptFlags & FLAG_VALIDATE)
+        {
+            cmd_validatesig(ucMBAddr);
         }
         /* Release hardware resources. */
         if (ucStartThread)

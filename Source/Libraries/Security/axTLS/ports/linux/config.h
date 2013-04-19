@@ -1088,3 +1088,4 @@ is intended for making fat binary builds on OS X. */
 
 /* JSG */
 #define EXTERN_UNLESS_MAIN_MODULE extern
+#define CONFIG_SSL_GENERATE_X509_CERT

@@ -1090,3 +1090,5 @@ is intended for making fat binary builds on OS X. */
 #define CFG_EMBEDDED
 #define EXTERN_UNLESS_MAIN_MODULE extern
 #define CONFIG_SSL_SKELETON_MODE
+#define CONFIG_SSL_CERT_VERIFICATION
+#define CONFIG_X509_MAX_CA_CERTS    2

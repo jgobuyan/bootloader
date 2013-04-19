@@ -69,8 +69,10 @@ struct _x509_ctx
     char *ca_cert_dn[X509_NUM_DN_TYPES];
     char *cert_dn[X509_NUM_DN_TYPES];
     char **subject_alt_dnsnames;
+#if 0
     time_t not_before;
     time_t not_after;
+#endif
     uint8_t *signature;
     uint16_t sig_len;
     uint8_t sig_type;
@@ -87,7 +89,6 @@ typedef struct
     X509_CTX *cert[CONFIG_X509_MAX_CA_CERTS];
 } CA_CERT_CTX;
 #endif
-
 int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx);
 void x509_free(X509_CTX *x509_ctx);
 #ifdef CONFIG_SSL_CERT_VERIFICATION

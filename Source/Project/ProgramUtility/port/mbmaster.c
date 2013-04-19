@@ -406,7 +406,7 @@ eMBPoll( void )
 
         case EV_FRAME_SENT:
             DEBUG_PUTSTRING("EV_FRAME_SENT");
-            vMBPortMasterTimerEnable( 2 );
+            vMBPortMasterTimerEnable( 5000 );
             break;
         }
     }

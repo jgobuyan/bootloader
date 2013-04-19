@@ -1,7 +1,0 @@
-Exception: STATUS_ACCESS_VIOLATION at eip=00401DDD
-eax=07FFFFFF ebx=800282F8 ecx=00000000 edx=00000000 esi=80028358 edi=0085AD20
-ebp=FFFACD68 esp=FFFACD10 program=C:\Users\jeromeg\Documents\GitHub\bootloader\Source\Project\ProgramUtility\prog_util.exe, pid 22908, thread unknown (0x563C)
-cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
-Stack trace:
-Frame     Function  Args
-End of stack trace
