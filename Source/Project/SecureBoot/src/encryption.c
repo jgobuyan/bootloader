@@ -4,7 +4,7 @@
  *  Created on: 2013-04-10
  *      Author: jeromeg
  */
-
+#include <string.h>
 #include "port.h"
 #include "fwheader.h"
 #include "blowfish.h"
@@ -16,7 +16,8 @@
 
 static BLOWFISH_context context;
 static const KeyRing *keyring = (const KeyRing *)FLASH_KEY_BASE;
-
+extern void *ax_malloc(int size);
+extern void ax_free(void *addr);
 /**
  * Decrypt uploaded block using Blowfish.
  * @param pData - pointer to buffered data
@@ -70,7 +71,7 @@ BOOL validate_signature (fwHeader *pHdr )
     /* Calculate message digest */
     MD5_Init(&md5_context);
     MD5_Update(&md5_context, (const uint8_t *)(pHdr + 1), pHdr->info.length);
-    MD5_Final(&md5_digest, &md5_context);
+    MD5_Final(&md5_digest[0], &md5_context);
 
     /* Compare header info */
     if (memcmp(&pSig->info, &pHdr->info, sizeof(fwInfo)))

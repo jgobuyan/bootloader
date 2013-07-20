@@ -26,11 +26,17 @@
 #include "mbport.h"
 
 /* ----------------------- ST Peripheral includes ---------------------------*/
-#include "stm32f37x_usart.h"
+#include "stm32f37x.h"
 
+#ifndef USE_EVAL_BOARD
+#define USART                           USART3
+#define USART_IRQ                       USART3_IRQn
+#else
 #define USART                           USART2
 #define USART_IRQ                       USART2_IRQn
+#endif
 /* ----------------------- static functions ---------------------------------*/
+extern void platform_rs485Kludge(uint8_t state);
 
 USART_InitTypeDef USART_InitStruct;
 /* ----------------------- Start implementation -----------------------------*/
@@ -42,7 +48,10 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
      */
     if (xRxEnable)
     {
+        /* RS485 Kludge */
+        platform_rs485Kludge(1);
         USART_ITConfig(USART, USART_IT_RXNE, ENABLE);
+
     }
     else
     {
@@ -50,6 +59,8 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
     }
     if (xTxEnable)
     {
+        /* RS485 Kludge */
+        platform_rs485Kludge(0);
         USART_ITConfig(USART, USART_IT_TXE, ENABLE);
     }
     else
@@ -123,11 +134,12 @@ xMBPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,
     USART_SetReceiverTimeOut(USART, timeout);
     USART_ReceiverTimeOutCmd(USART, ENABLE);
 
-#ifdef CFG_RS485
+#ifndef USE_EVAL_BOARD
+    USART_DEPolarityConfig(USART, USART_DEPolarity_High);
     USART_DECmd(USART, ENABLE);
-    USART_DEPolarityConfig(USART, USART_DEPolarity_Low);
-    USART_SetDEAssertionTime(USART, 1);
-    USART_SetDEDeassertionTime(USART, 1);
+    USART_SetDEAssertionTime(USART, 10);
+    USART_SetDEDeassertionTime(USART, 10);
+    USART_LINCmd(USART, ENABLE);
 #endif
     USART_Cmd(USART, ENABLE);
 

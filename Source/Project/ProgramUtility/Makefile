@@ -58,6 +58,7 @@ CSRC        = main.c port/portserial.c port/portother.c \
               cmd_prepareflash.c \
               cmd_uploadblock.c \
               cmd_validatesig.c \
+              cmd_keys.c \
               util_addheader.c \
               util_upload.c \
               util_encrypt.c \

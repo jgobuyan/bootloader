@@ -106,11 +106,8 @@ int main(void)
         pHdr = pHdrB;
     }
 
-    /* Initialize Key Button mounted on STM320518-EVAL board */
-    STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO);
-
-    /* If no valid loads or  key push-button on STM320518-EVAL Board is pressed */
-    if (!pHdr || STM_EVAL_PBGetState(BUTTON_KEY) == 0x00)
+    /* If no valid loads or bootloader is invoked */
+    if (!pHdr || platform_getSwitchState() == 0x00)
     {
         /* If Key is pressed, execute the IAP driver in order to re-program the Flash */
         SecureBoot_Init();
@@ -182,7 +179,7 @@ void SecureBoot_Init(void)
             USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-    STM_EVAL_COMInit(COM1, &USART_InitStructure);
+    platform_initSerialPort(&USART_InitStructure);
 
     /* Enable CRC clock */
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);

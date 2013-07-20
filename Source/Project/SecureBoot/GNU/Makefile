@@ -64,7 +64,14 @@ endif
 PROJECT = bootloader
 CHIP = STM32F37x
 CHIP_PREFIX = stm32f37x
-PLATFORM = STM32373C_EVAL
+ifeq ($(PLATFORM),)
+PLATFORM = genist
+endif
+
+ifeq ($(PLATFORM),STM32373C_EVAL)
+  USE_COPT += -DUSE_EVAL_BOARD
+endif
+
 # Imported source files and paths
 CSRC =
 
@@ -101,11 +108,13 @@ LIBSRC += ${STDPERIPHDIR}/src/${CHIP_PREFIX}_wwdg.c
 
 # List of all IAP files.
 IAPDIR = ${TOPDIR}/Project/SecureBoot
+ifeq ($(PLATFORM),STM32373C_EVAL)
 IAPSRC += ${IAPDIR}/src/common.c
+endif
 IAPSRC += ${IAPDIR}/src/flash_if.c
 IAPSRC += ${IAPDIR}/src/${CHIP_PREFIX}_it.c
 IAPSRC += ${IAPDIR}/src/system_${CHIP_PREFIX}.c
-IAPSRC += ${IAPDIR}/src/platform_${CHIP_PREFIX}.c
+IAPSRC += ${IAPDIR}/src/platform_${PLATFORM}.c
 IAPSRC += ${IAPDIR}/src/debug.c
 IAPSRC += ${IAPDIR}/src/main.c
 IAPSRC += ${IAPDIR}/src/mbfuncboot.c

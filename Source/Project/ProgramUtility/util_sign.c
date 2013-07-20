@@ -1,6 +1,7 @@
 /**
  * util_sign.c
  *
+ * Signature and Key File Utilities
  *  Created on: 2013-04-12
  *      Author: jeromeg
  */
@@ -20,82 +21,27 @@
 #include "commands.h"
 #include "fwHeader.h"
 #include "encryption.h"
+#include "platform.h"
 
-#define KEYARRAY_SIZE   2048
+#define NUM_RETRIES 5
+/**
+ * RSA Key context pointer
+ */
 static RSA_CTX *rsa_context;
+
+/**
+ * Key Ring buffer
+ */
 static UCHAR keyarray[KEYARRAY_SIZE];    /* Flash block size */
+
+/**
+ * Signature file buffer
+ */
 static sigFile sig;
 
-#if 0
-/**
- *
- * @param cert
- * @param offset
- * @return
- */
-static int get_publickey(const uint8_t *cert, int *offset)
-{
-    int i;
-    int index = 0;
-    int ret = X509_NOT_OK;
-    KeyRing *pKeyfile = (KeyRing *)keyarray;
-    uint8_t *pData = (uint8_t *)(pKeyfile + 1);
-    uint8_t *modulus = NULL, *pub_exp = NULL;
-    printf("PUBLIC KEY\n");
-    if (asn1_next_obj(cert, offset, ASN1_SEQUENCE) < 0 ||
-            asn1_skip_obj(cert, offset, ASN1_SEQUENCE) ||
-            asn1_next_obj(cert, offset, ASN1_BIT_STRING) < 0)
-    {
-        printf("Err1\n");
-        goto end_pub_key;
-    }
-
-    (*offset)++;        /* ignore the padding bit field */
-    if (asn1_next_obj(cert, offset, ASN1_SEQUENCE) < 0)
-    {
-        printf("Err2\n");
-        goto end_pub_key;
-    }
-    pKeyfile->rsa_modulus_size = asn1_get_int(cert, offset, &modulus);
-    pKeyfile->rsa_exponent_size = asn1_get_int(cert, offset, &pub_exp);
-    printf("mod_len=%ld pub_len=%ld\n", pKeyfile->rsa_modulus_size,
-            pKeyfile->rsa_exponent_size);
-    RSA_pub_key_new(&rsa_context, modulus, pKeyfile->rsa_modulus_size, pub_exp,
-            pKeyfile->rsa_exponent_size);
-
-    /* Copy modulus to keyfile */
-    pKeyfile->rsa_modulus_offset = index;
-    memcpy(&pData[index], modulus, pKeyfile->rsa_modulus_size);
-    index += pKeyfile->rsa_modulus_size;
-    pKeyfile->rsa_exponent_offset = index;
-    /* Copy exponent to keyfile */
-    memcpy(&pData[index], pub_exp, pKeyfile->rsa_exponent_size);
-    free(modulus);
-    free(pub_exp);
-#if 1
-    printf("modulus: ");
-    for (i = 0; i < pKeyfile->rsa_modulus_size; i++)
-    {
-        printf("%02x:", pData[pKeyfile->rsa_modulus_offset + i]);
-    }
-    printf("\n");
-    printf("exponent: ");
-    for (i = 0; i < pKeyfile->rsa_exponent_size; i++)
-    {
-        printf("%02x:", pData[pKeyfile->rsa_exponent_offset + i]);
-    }
-    printf("\n");
-#endif
-    ret = 0;
-
-end_pub_key:
-    printf ("get_publickey ret=%d\n", ret);
-    return ret;
-}
-#endif
 /**
  * Get RSA key info from the private DER file. The public elements are saved
- * into the keyring to be sent to the embedded device for signature validation.
+ * into the Key Ring buffer.
  * @param buf
  * @param len
  * @return
@@ -137,7 +83,7 @@ int get_key(const uint8_t *buf)
     pKeyfile->rsa_exponent_offset = index;
     /* Copy exponent to keyfile */
     memcpy(&pData[index], pub_exp, pKeyfile->rsa_exponent_size);
-#if 1
+
     printf("modulus: ");
     for (i = 0; i < pKeyfile->rsa_modulus_size; i++)
     {
@@ -150,43 +96,104 @@ int get_key(const uint8_t *buf)
         printf("%02x:", pData[pKeyfile->rsa_exponent_offset + i]);
     }
     printf("\n");
-#endif
+
     free(modulus);
     free(priv_exp);
     free(pub_exp);
     return X509_OK;
 }
 
+/**
+ * Free the key context
+ */
 void free_key(void)
 {
     RSA_free(rsa_context);
 }
 
-int util_createkeyfile(char *outfile, char *rsa_keyfile, char *bf_keystring)
+/**
+ * Create keyfile and output to a file or upload to the board.
+ *
+ * If outfile is not null, the keyfile is written to a file. Otherwise it
+ * is uploaded to the board.
+ *
+ * @param outfile
+ * @param rsa_keyfile
+ * @param bf_keystring
+ * @return
+ */
+int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *bf_keystring)
 {
     int fdout;
+    BOOL ret = FALSE;
     /* Clear memory first */
     memset(keyarray, 0, KEYARRAY_SIZE);
 
-    KeyRing *pKeyfile = (KeyRing *)keyarray;
+    KeyRing *pKeyfile = (KeyRing *) keyarray;
     pKeyfile->bf_key_lock = 0xffffffff;
     if (util_set_rsakey(rsa_keyfile))
     {
         return TRUE;
     }
-
-    fdout = open(outfile, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    if (fdout == -1)
+    if (outfile)
     {
-        perror("Could not open output");
-        return TRUE;
+        /* outfile is specified, so open keyfile */
+        fdout = open(outfile, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+        if (fdout == -1)
+        {
+            perror("Could not open output");
+            return TRUE;
+        }
     }
+
     util_str2key(bf_keystring, &pKeyfile->bf_key[0], &pKeyfile->bf_key_size);
-    write(fdout, keyarray, KEYARRAY_SIZE);
-    close(fdout);
-    return FALSE;
+    if (outfile)
+    {
+        /* outfile is specified, so write keyfile */
+        write(fdout, keyarray, KEYARRAY_SIZE);
+        close(fdout);
+    }
+    else
+    {
+        int index;
+        int retry;
+        /* Upload keyfile to board */
+        printf("Uploading keys:\n");
+        while (index < KEYARRAY_SIZE)
+        {
+            DEBUG_PUTSTRING1("Key Block ", index);
+            retry = NUM_RETRIES;
+            while (cmd_setkeys(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
+                    &keyarray[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
+            {
+                if ((--retry) == 0)
+                {
+                    fprintf(stderr, "Too many retries at block %d\n",
+                            index / UPLOAD_BLOCK_SIZE);
+                    ret = TRUE;
+                    break;
+                }
+                printf("R");
+                fflush(stdout);
+            }
+            if (ret)
+            {
+                break;
+            }
+            printf("*");
+            fflush(stdout);
+            index += UPLOAD_BLOCK_SIZE;
+        }
+    }
+    return ret;
 }
 
+/**
+ * Read the DER formatted RSA key and populate the key ring buffer.
+ *
+ * @param rsa_keyfile
+ * @return
+ */
 int util_set_rsakey(char *rsa_keyfile)
 {
     int ret = FALSE;
@@ -204,16 +211,19 @@ int util_set_rsakey(char *rsa_keyfile)
     fstat(fdin, &sb);
     pInfile = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fdin, 0);
     ret = get_key(pInfile);
-    //ret = get_publickey(pInfile, &offset);
     munmap(pInfile, sb.st_size);
     close(fdin);
     return ret;
 }
 
 /**
- * Sign the signature file
- * @param data
- * @param size
+ * Sign the signature file.
+ *
+ * An MD5 digest is calculated over the firmware image and added to the
+ * signature file. The signature file is signed by encrypting it using
+ * the RSA private key.
+ * @param data - pointer to firmware image
+ * @param size - size of firmware image
  * @param rsa_keystring
  */
 void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile)

@@ -4,6 +4,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f37x.h"
+#include "stm32373c_eval.h"
 #include "stm32373c_eval_lcd.h"
 #include "debug.h"
 #include <string.h>
@@ -38,8 +39,25 @@ void platform_init(void)
     LCD_SetBackColor(devLCD.bgcolor);
     LCD_SetTextColor(devLCD.fgcolor);
     LCD_DisplayOn();
+    STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO);
 }
 
+/**
+ * Get the state of the switch that is used to invoke the bootloader function
+ * @return
+ */
+uint32_t platform_getSwitchState(void)
+{
+	return STM_EVAL_PBGetState(BUTTON_KEY);
+}
+
+/**
+ * Initialize serial port
+ */
+void platform_initSerialPort(void *init)
+{
+    STM_EVAL_COMInit(COM1, (USART_InitTypeDef *)init);
+}
 
 /**
  * @brief  Print a string on the LCD

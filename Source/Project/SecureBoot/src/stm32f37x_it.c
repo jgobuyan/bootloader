@@ -30,7 +30,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f37x_it.h"
 #include "stm32f37x_usart.h"
-/** @addtogroup STM32F3xx_IAP
+/** @addtogroup SecureBoot
   * @{
   */
 
@@ -175,6 +175,27 @@ void USART2_IRQHandler( void )
     }
 }
 
+/**
+  * @brief  This function handles USART3 interrupt requests.
+  * @param  None
+  * @retval None
+  */
+
+void USART3_IRQHandler( void )
+{
+    if (USART_GetITStatus(USART3, USART_IT_TXE))
+    {
+        prvvUARTTxReadyISR();
+    }
+    if (USART_GetITStatus(USART3, USART_IT_RXNE))
+    {
+        prvvUARTRxISR();
+    }
+    if (USART_GetITStatus(USART3, USART_IT_RTO))
+    {
+        prvvTIMERExpiredISR();
+    }
+}
 
 /**
   * @}

@@ -14,6 +14,9 @@
 UCHAR cmd_getheader(UCHAR ucMBAddr, UCHAR ucBank);
 UCHAR cmd_prepareflash(UCHAR ucMBAddr);
 UCHAR cmd_uploadblock(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
+UCHAR cmd_validatesig(UCHAR ucMBAddr);
+UCHAR cmd_setkeys(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
+UCHAR cmd_lockkeys(UCHAR ucMBAddr);
 
 void cmd_start(void);
 void cmd_done(UCHAR status);
@@ -30,6 +33,7 @@ void util_str2key(char *keystring, UCHAR *keyarray, ULONG *keylength);
 
 void util_encrypt(char *pOutfile, ULONG size, char *bf_keystring);
 void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile);
+int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *bf_keystring);
 
 /* ModBus master commands */
 eMBErrorCode eMBSendFrame(UCHAR *ucMBFrame, USHORT usLength);
@@ -41,6 +45,8 @@ eMBException cmd_getheader_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_prepareflash_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_uploadblock_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength );
+eMBException cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
+eMBException cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_illegalfunc_callback( UCHAR * pucFrame, USHORT * pusLength );
 
 #endif /* COMMANDS_H_ */

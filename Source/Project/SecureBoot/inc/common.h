@@ -32,12 +32,16 @@
 /* Includes ------------------------------------------------------------------*/
 #ifdef STM32F37X
   #include "stm32f37x.h"
-  #include "stm32373c_eval.h" 
+#ifdef USE_EVAL_BOARD
+  #include "stm32373c_eval.h"
+#endif
 #endif  /* STM32F37X */
 
 #ifdef STM32F30X
   #include "stm32f30x.h"
-  #include "stm32303c_eval.h" 
+#ifdef USE_EVAL_BOARD
+  #include "stm32303c_eval.h"
+#endif
 #endif  /* STM32F30X */
 
 /* Exported types ------------------------------------------------------------*/

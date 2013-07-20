@@ -56,7 +56,8 @@ static int      uiRxBufferPos;
 static int      uiTxBufferPos;
 
 static struct termios xOldTIO;
-
+/* ----------------------- External variables -------------------------------*/
+extern char *devString;
 /* ----------------------- Function prototypes ------------------------------*/
 static BOOL     prvbMBPortSerialRead( UCHAR * pucBuffer, USHORT usNBytes, USHORT * usNBytesRead );
 static BOOL     prvbMBPortSerialWrite( UCHAR * pucBuffer, USHORT usNBytes );
@@ -98,7 +99,14 @@ xMBPortSerialInit( UCHAR ucPort, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
     struct termios  xNewTIO;
     speed_t         xNewSpeed;
 
-    snprintf( szDevice, 16, "/dev/ttyS%d", ucPort );
+    if(ucPort != 255)
+    {
+    	snprintf( szDevice, 16, "/dev/ttyS%d", ucPort );
+    }
+    else
+    {
+    	snprintf( szDevice, 16, "%s", devString );
+    }
 
     if( ( iSerialFd = open( szDevice, O_RDWR | O_NOCTTY ) ) < 0 )
     {

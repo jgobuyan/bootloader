@@ -1,2 +1,2 @@
 #include "fwheader.h"
-fwInfo __fwinfo = { .magic = FW_MAGIC, .version = "Bootloader 2013-Apr-18" };
+fwInfo __fwinfo = { .magic = FW_MAGIC, .version = "Bootloader 2013-Jul-19" };

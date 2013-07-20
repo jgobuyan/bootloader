@@ -14,6 +14,8 @@
 #define MB_FUNC_BOOT_PREPAREFLASH       ( 101 )
 #define MB_FUNC_BOOT_UPLOADBLOCK        ( 102 )
 #define MB_FUNC_BOOT_VALIDATEIMAGE      ( 103 )
+#define MB_FUNC_BOOT_SETKEYS            ( 104 )
+#define MB_FUNC_BOOT_LOCKKEYS           ( 105 )
 
 #define VERSION_STRING_LENGTH   32
 #define SIGNATURE_LENGTH        446
@@ -30,6 +32,7 @@ typedef enum
     BOOT_BADSIG = 0x05,
     BOOT_ERROR = 0x06,
     BOOT_UNVALIDATED = 0x07,
+    BOOT_LOCKED = 0x08,
     BOOT_EXIT = 0xfd,
     BOOT_TIMEOUT = 0xfe,
     BOOT_INVALID = 0xff,
@@ -66,6 +69,8 @@ typedef struct
 #define MB_FUNC_BOOT_PREPAREFLASH_SIZE      3
 #define MB_FUNC_BOOT_UPLOADBLOCK_REQ_SIZE   (UPLOAD_BLOCK_SIZE + 3)
 #define MB_FUNC_BOOT_VALIDATEIMAGE_SIZE     3
+#define MB_FUNC_BOOT_SETKEYS_REQ_SIZE       (UPLOAD_BLOCK_SIZE + 3)
+#define MB_FUNC_BOOT_LOCKKEYS_SIZE          3
 
 void mbBootInit( void );
 

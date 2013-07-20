@@ -39,7 +39,7 @@
 #include "flash_if.h"
 #include "flashmap.h"
 #include "platform.h"
-
+#include "keyfile.h"
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbframe.h"
@@ -97,6 +97,7 @@ UCHAR ucCheckImage(fwHeader *pHdr)
     }
     return ret;
 }
+
 /**
  * Get Header Function Handler
  * @param pucFrame
@@ -145,64 +146,111 @@ eMBException eMBFuncBootGetHeader(UCHAR * pucFrame, USHORT * usLen)
 }
 
 /**
- * Prepare Flash partition
+ * Prepare Flash partition.
+ * The bank can be specified explicitly or the bootloader can choose the
+ * least recently used bank.
  * @param pucFrame
  * @param usLen
  * @return
  */
 eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
 {
+    UCHAR ucBank;
     eMBException eStatus = MB_EX_NONE;
     fwHeader *pHdrA = (fwHeader *)Bank[BANK_A].addr;
     fwHeader *pHdrB = (fwHeader *)Bank[BANK_B].addr;
-
-    if (*usLen == MB_FUNC_BOOT_PREPAREFLASH_SIZE)
+    ucBank = pucFrame[MB_PDU_FUNC_BOOT_BANK_OFF];
+    if ((*usLen == MB_FUNC_BOOT_PREPAREFLASH_SIZE) || (ucBank > BANK_B))
     {
-        /* Check if the bank number is valid */
-        if (ucCheckImage(pHdrA))
+        if ((ucBank == BANK_A) || (ucBank == BANK_B))
         {
-            DEBUG_PUTSTRING("Bank A Invalid");
-            ucCurrentBank = BANK_A;
-            if (ucCheckImage(pHdrB))
+            /* Single Bank Mode. Always use specified Bank */
+            ucCurrentBank = ucBank;
+            if (ucCurrentBank == BANK_A)
             {
-                DEBUG_PUTSTRING("Bank B Invalid");
-                /* Both banks are empty. Use A and start from 0 */
-                ulCurrentSeqNum = 0;
+                /* Check if the image in Bank B is valid. If it is not,
+                 * start sequence at 0. Otherwise ensure that Bank A
+                 * sequence number is higher than Bank B.
+                 */
+                if (ucCheckImage(pHdrB))
+                {
+                    DEBUG_PUTSTRING("Bank B Invalid");
+
+                    /* Start from 0 */
+                    ulCurrentSeqNum = 0;
+                }
+                else
+                {
+                    DEBUG_PUTSTRING("Bank B Valid");
+                    /* Bank B is valid. Increment sequence number */
+                    ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                }
             }
             else
             {
-                DEBUG_PUTSTRING("Bank B Valid");
-                /* Bank B is valid, Bank A is empty */
-                ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                /* Check if the image in Bank A is valid */
+                if (ucCheckImage(pHdrA))
+                {
+                    DEBUG_PUTSTRING("Bank A Invalid");
+
+                    /* Start from 0 */
+                    ulCurrentSeqNum = 0;
+                }
+                else
+                {
+                    DEBUG_PUTSTRING("Bank A Valid");
+                    /* Bank A is valid. Increment sequence number */
+                    ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
+                }
             }
         }
         else
         {
-            DEBUG_PUTSTRING("Bank A Valid");
-            if (ucCheckImage(pHdrB))
+            /* Check if the bank number is valid */
+            if (ucCheckImage(pHdrA))
             {
-                /* Bank A is valid, Bank B is empty */
-                DEBUG_PUTSTRING("Bank B Invalid");
-                ucCurrentBank = BANK_B;
-                ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
+                DEBUG_PUTSTRING("Bank A Invalid");
+                ucCurrentBank = BANK_A;
+                if (ucCheckImage(pHdrB))
+                {
+                    DEBUG_PUTSTRING("Bank B Invalid");
+                    /* Both banks are empty. Use A and start from 0 */
+                    ulCurrentSeqNum = 0;
+                }
+                else
+                {
+                    DEBUG_PUTSTRING("Bank B Valid");
+                    /* Bank B is valid, Bank A is empty */
+                    ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                }
             }
             else
             {
-                DEBUG_PUTSTRING("Bank B Valid");
-                /* Both banks are valid. Compare seqNums and use the older one */
-                if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
+                DEBUG_PUTSTRING("Bank A Valid");
+                if (ucCheckImage(pHdrB))
                 {
+                    /* Bank A is valid, Bank B is empty */
+                    DEBUG_PUTSTRING("Bank B Invalid");
                     ucCurrentBank = BANK_B;
                     ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
                 }
                 else
                 {
-                    ucCurrentBank = BANK_A;
-                    ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                    DEBUG_PUTSTRING("Bank B Valid");
+                    /* Both banks are valid. Compare seqNums and use the older one */
+                    if (pHdrA->seqNum == ((pHdrB->seqNum + 1) & SEQNUM_MASK))
+                    {
+                        ucCurrentBank = BANK_B;
+                        ulCurrentSeqNum = (pHdrA->seqNum + 1) & SEQNUM_MASK;
+                    }
+                    else
+                    {
+                        ucCurrentBank = BANK_A;
+                        ulCurrentSeqNum = (pHdrB->seqNum + 1) & SEQNUM_MASK;
+                    }
                 }
             }
         }
-
         pHdrA = (fwHeader *)Bank[ucCurrentBank].addr;
 
         /*
@@ -220,6 +268,13 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
     }
     return eStatus;
 }
+
+/**
+ * Receive an encrypted block. Decrypt and write it into Flash.
+ * @param pucFrame
+ * @param usLen
+ * @return
+ */
 eMBException eMBFuncBootUploadBlock(UCHAR * pucFrame, USHORT * usLen)
 {
     eMBException eStatus = MB_EX_NONE;
@@ -269,6 +324,13 @@ eMBException eMBFuncBootUploadBlock(UCHAR * pucFrame, USHORT * usLen)
     *usLen = MB_FUNC_BOOT_DEFAULT_RESP_SIZE;
     return eStatus;
 }
+
+/**
+ * Validate image in Flash. Write the sequence number into the first location.
+ * @param pucFrame
+ * @param usLen
+ * @return
+ */
 eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
 {
     eMBException eStatus = MB_EX_NONE;
@@ -313,6 +375,112 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
 }
 
 /**
+ * Receive a key ring block and write it into Flash.
+ * @param pucFrame
+ * @param usLen
+ * @return
+ */
+eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
+{
+    eMBException eStatus = MB_EX_NONE;
+    UCHAR ucBlockNum;
+    ULONG ulFlashAddress;
+    KeyRing *pKeyRing = (KeyRing *)FLASH_KEY_BASE;
+    if (*usLen == MB_FUNC_BOOT_SETKEYS_REQ_SIZE)
+    {
+        ucBlockNum = pucFrame[MB_PDU_FUNC_BOOT_BLOCKNUM_OFF];
+        if (pKeyRing->bf_key_lock != FLASH_EMPTY)
+        {
+            /* Keys are locked. Do not allow reprogramming. */
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_LOCKED;
+        }
+        else if ((ucBlockNum * UPLOAD_BLOCK_SIZE) < KEYARRAY_SIZE)
+        {
+            ulFlashAddress = (ULONG) FLASH_KEY_BASE
+                    + ucBlockNum * UPLOAD_BLOCK_SIZE;
+            if (ucBlockNum == 0)
+            {
+                /* Ensure that the key lock field is in erased state */
+                memset(&pucFrame[MB_PDU_FUNC_BOOT_BLOCKDATA_OFF],0xff, 4);
+                /* Erase the keys */
+                FLASH_If_Erase(ulFlashAddress, KEYARRAY_SIZE);
+            }
+
+            /* Write keys to Flash */
+            if (!FLASH_If_Write(&ulFlashAddress,
+                    (uint32_t *)&pucFrame[MB_PDU_FUNC_BOOT_BLOCKDATA_OFF],
+                    UPLOAD_BLOCK_SIZE / 4))
+            {
+                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
+            }
+            else
+            {
+                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
+            }
+        }
+        else
+        {
+            /* block number is out of range */
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADBLKNUM;
+        }
+    }
+    else
+    {
+        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
+    }
+    *usLen = MB_FUNC_BOOT_DEFAULT_RESP_SIZE;
+    return eStatus;
+}
+
+/**
+ * Lock keys in Flash. Write the magic number into the first location.
+ * @param pucFrame
+ * @param usLen
+ * @return
+ */
+eMBException eMBFuncBootLockKeys(UCHAR * pucFrame, USHORT * usLen)
+{
+    eMBException eStatus = MB_EX_NONE;
+    ULONG ulAddr = (ULONG)FLASH_KEY_BASE;
+    ULONG *pAddr = (ULONG *)FLASH_KEY_BASE;
+    ULONG i;
+    ULONG empty = TRUE;
+    ULONG magic = FW_MAGIC;
+    if (*usLen == MB_FUNC_BOOT_LOCKKEYS_SIZE)
+
+    {
+        /* Check if Flash key ring is empty. */
+        i = 0;
+        while ((pAddr[i] == FLASH_EMPTY) && (i < KEYARRAY_SIZE / sizeof(ULONG)))
+        {
+            i++;
+            if (pAddr[i] != FLASH_EMPTY)
+            {
+                empty = FALSE;
+            }
+        }
+        if (empty)
+        {
+            /* Don't lock if key ring is empty */
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
+        }
+        else
+        {
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
+            /* Write magic number to validate */
+            FLASH_If_Write(&ulAddr, &magic, 1);
+        }
+
+    }
+    else
+    {
+        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
+    }
+    *usLen = MB_FUNC_BOOT_DEFAULT_RESP_SIZE;
+    return eStatus;
+}
+
+/**
  * Return pointer to image header if bank is valid.
  * @param ucBank
  * @return
@@ -334,6 +502,8 @@ void mbBootInit(void)
     eMBRegisterCB( MB_FUNC_BOOT_PREPAREFLASH, eMBFuncBootPrepareFlash);
     eMBRegisterCB( MB_FUNC_BOOT_UPLOADBLOCK, eMBFuncBootUploadBlock);
     eMBRegisterCB( MB_FUNC_BOOT_VALIDATEIMAGE, eMBFuncBootValidateImage);
+    eMBRegisterCB( MB_FUNC_BOOT_SETKEYS, eMBFuncBootSetKeys);
+    eMBRegisterCB( MB_FUNC_BOOT_LOCKKEYS, eMBFuncBootLockKeys);
     ucCurrentBank = BANK_BOOT;
 }
 

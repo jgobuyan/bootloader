@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
-
+#include <ctype.h>
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
@@ -54,6 +54,7 @@ static void     vSetPollingThreadState( enum ThreadState eNewState );
 static void    *pvPollingThread( void *pvParameter );
 
 uint8_t debugflags = 0;
+char *devString;
 /* ----------------------- Start implementation -----------------------------*/
 BOOL
 bSetSignal( int iSignalNr, void ( *pSigHandler ) ( int ) )
@@ -121,6 +122,7 @@ main( int argc, char *argv[] )
     int     timeout;
     char   *infile = NULL;
     char   *outfile = NULL;
+    char   *endptr;
     opterr = 0;
     ucPort = 2; /* Default to first USB serial dongle */
     /*
@@ -145,7 +147,13 @@ main( int argc, char *argv[] )
             pBlowfishKeyString = optarg;
             break;
         case 'p':
-            ucPort = strtoul(optarg, NULL, 0);
+            ucPort = strtoul(optarg, &endptr, 0);
+            /* If argument is not a pure number, it must be a string */
+            if (endptr)
+            {
+            	ucPort = 255;
+            	devString = optarg;
+            }
             break;
         case 's':
             ulOptFlags |= FLAG_SIGN;
@@ -199,6 +207,12 @@ main( int argc, char *argv[] )
         printf("Error: cannot specify both -a and -k options\n");
         abort();
     }
+    if ((ulOptFlags & FLAG_CREATE_KEYFILE) && (infile == 0))
+    {
+        /* Request to upload keyfile */
+        ucStartThread = TRUE;
+    }
+
     /*
      * Enable signal handlers
      */
@@ -223,6 +237,8 @@ main( int argc, char *argv[] )
             (void)eMBRegisterCB(MB_FUNC_BOOT_PREPAREFLASH, cmd_prepareflash_callback);
             (void)eMBRegisterCB(MB_FUNC_BOOT_UPLOADBLOCK, cmd_uploadblock_callback);
             (void)eMBRegisterCB(MB_FUNC_BOOT_VALIDATEIMAGE, cmd_validatesig_callback);
+            (void)eMBRegisterCB(MB_FUNC_BOOT_SETKEYS, cmd_setkeys_callback);
+            (void)eMBRegisterCB(MB_FUNC_BOOT_LOCKKEYS, cmd_lockkeys_callback);
             (void)eMBRegisterIllegalFuncCB(cmd_illegalfunc_callback);
 
             (void)eMBRegisterTimeoutCB( cmd_timeout_callback );
@@ -273,17 +289,7 @@ main( int argc, char *argv[] )
         }
         else if (ulOptFlags & FLAG_CREATE_KEYFILE)
         {
-            if (infile)
-            {
-                //util_set_rsakey(pRSAKeyFile);
-                util_createkeyfile(infile, pRSAKeyFile, pBlowfishKeyString);
-                printf("AHAHAH\n");
-            }
-            else
-            {
-                fprintf(stderr, "Check Key: missing filenames\n");
-            }
-
+            util_createkeyfile(ucMBAddr, infile, pRSAKeyFile, pBlowfishKeyString);
         }
         if (ulOptFlags & FLAG_CHECK_HEADER)
         {
