@@ -128,13 +128,16 @@ main( int argc, char *argv[] )
     /*
      * Process command line options
      */
-    while ((c = getopt(argc, argv, "a:ce:kp:s:uv:DV")) != -1)
+    while ((c = getopt(argc, argv, "a:b:ce:kp:s:uv:DV")) != -1)
     {
         switch (c)
         {
         case 'a':
             ulOptFlags |= FLAG_ADD_HEADER;
             pucVersion = optarg;
+            break;
+        case 'b':
+            ucBank = strtoul(optarg, NULL, 0);
             break;
         case 'c':
             ulOptFlags |= FLAG_CHECK_HEADER;
@@ -269,7 +272,7 @@ main( int argc, char *argv[] )
         {
             if (infile)
             {
-                util_upload(ucMBAddr, infile);
+                util_upload(ucMBAddr, infile, ucBank);
             }
             else
             {

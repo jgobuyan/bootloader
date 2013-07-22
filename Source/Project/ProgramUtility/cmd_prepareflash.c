@@ -10,17 +10,22 @@
 #include "fwheader.h"
 #include "commands.h"
 #include "platform.h"
+
 /**
  * Send Prepare Flash request
+ *
+ * @param ucMBaddr
+ * @param ucBank
+ * @return
  */
-UCHAR cmd_prepareflash(UCHAR ucMBaddr)
+UCHAR cmd_prepareflash(UCHAR ucMBaddr, UCHAR ucBank)
 {
     UCHAR    buf[8];
     cmdFrameHeader *pFrame = (cmdFrameHeader *)buf;
     DEBUG_PUTSTRING1("PREPARE_FLASH addr=", ucMBaddr);
     pFrame->mbAddr = ucMBaddr;
     pFrame->cmdId = MB_FUNC_BOOT_PREPAREFLASH;
-    pFrame->subcmdId = 0;
+    pFrame->subcmdId = ucBank;
     pFrame->status = 0;
     cmd_start();
     eMBSendFrame(buf, MB_FUNC_BOOT_PREPAREFLASH_SIZE + 1);

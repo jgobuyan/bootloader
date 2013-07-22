@@ -481,7 +481,7 @@ selftest(void)
     byte key3[] = { 0x41, 0x79, 0x6E, 0xA0, 0x52, 0x61, 0x6E, 0xE4 };
     byte cipher3[] = { 0xE1, 0x13, 0xF4, 0x10, 0x2C, 0xFC, 0xCE, 0x43 };
 
-    do_bf_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
+    do_bf_setkey( &c, (const unsigned char *)"abcdefghijklmnopqrstuvwxyz", 26 );
     do_encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, "\x32\x4E\xD0\xFE\xF4\x13\xA2\x03", 8 ) )
 	return "Blowfish selftest failed (1).";
@@ -514,7 +514,7 @@ do_bf_setkey( BLOWFISH_context *c, const unsigned char *key, unsigned long keyle
 #ifndef GENIST_EMBEDDED
 	    fprintf(stderr,"%s\n", selftest_failed );
 #else
-	    DEBUG_PUTSTRING1("BF TEST FAILED ", selftest_failed);
+	    DEBUG_PUTSTRING1("BF TEST FAILED ", (unsigned int)selftest_failed);
 #endif
     }
     if( selftest_failed )

@@ -61,9 +61,9 @@ static ULONG    ulCurrentSeqNum;
 
 const flashPartition Bank[4] = {
         { (UCHAR *)FLASH_BOOT_HEADER, FLASH_BOOT_SIZE   },
-        { (UCHAR *)FLASH_BANKA_BASE,  FLASH_BANK_SIZE   },
-        { (UCHAR *)FLASH_BANKB_BASE,  FLASH_BANK_SIZE   },
-        { (UCHAR *)FLASH_BANKF_BASE,  FLASH_BANK_SIZE   }
+        { (UCHAR *)FLASH_BANKA_BASE,  FLASH_BANKA_SIZE  },
+        { (UCHAR *)FLASH_BANKB_BASE,  FLASH_BANKB_SIZE  },
+        { (UCHAR *)FLASH_BANKF_BASE,  FLASH_BANKF_SIZE  }
 };
 
 /**
@@ -488,7 +488,7 @@ eMBException eMBFuncBootLockKeys(UCHAR * pucFrame, USHORT * usLen)
 fwHeader *getImageHeader(UCHAR ucBank)
 {
     fwHeader *ret = NULL;
-    if ((ucBank != BANK_BOOT) || (ucCheckImage((fwHeader *)Bank[ucBank].addr) == BOOT_OK))
+    if ((ucBank == BANK_BOOT) || (ucCheckImage((fwHeader *)Bank[ucBank].addr) == BOOT_OK))
     {
         ret = (fwHeader *) Bank[ucBank].addr;
     }

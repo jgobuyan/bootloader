@@ -12,7 +12,7 @@
 #include "bootloader.h"
 
 UCHAR cmd_getheader(UCHAR ucMBAddr, UCHAR ucBank);
-UCHAR cmd_prepareflash(UCHAR ucMBAddr);
+UCHAR cmd_prepareflash(UCHAR ucMBAddr, UCHAR ucBank);
 UCHAR cmd_uploadblock(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
 UCHAR cmd_validatesig(UCHAR ucMBAddr);
 UCHAR cmd_setkeys(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
@@ -27,7 +27,7 @@ BOOL cmd_in_progress(void);
 int util_addheader(char *infile, char *outfile, char *version, char *dsa_keystring,
         char *bf_keystring);
 int util_checkheader(char *infile);
-int util_upload(UCHAR ucMBaddr, char *infile);
+int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank);
 int util_set_rsakey(char *rsa_keyfile);
 void util_str2key(char *keystring, UCHAR *keyarray, ULONG *keylength);
 
@@ -37,16 +37,16 @@ int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *b
 
 /* ModBus master commands */
 eMBErrorCode eMBSendFrame(UCHAR *ucMBFrame, USHORT usLength);
-eMBErrorCode eMBRegisterTimeoutCB( BOOL(*pxHandler)(void));
-eMBErrorCode eMBRegisterIllegalFuncCB(BOOL (*pxHandler) (void) );
+eMBErrorCode eMBRegisterTimeoutCB( BOOL (*pxHandler)(void));
+eMBErrorCode eMBRegisterIllegalFuncCB(BOOL (*pxHandler)(void));
 
-eMBException cmd_timeout_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_getheader_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_prepareflash_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_uploadblock_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
-eMBException cmd_illegalfunc_callback( UCHAR * pucFrame, USHORT * pusLength );
+BOOL cmd_timeout_callback( UCHAR * pucFrame, USHORT * pusLength );
+BOOL cmd_illegalfunc_callback( UCHAR * pucFrame, USHORT * pusLength );
 
 #endif /* COMMANDS_H_ */

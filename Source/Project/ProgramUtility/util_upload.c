@@ -22,9 +22,10 @@
  * Upload file in blocks
  * @param ucMBaddr
  * @param infile
+ * @param ucBank
  * @return
  */
-int util_upload(UCHAR ucMBaddr, char *infile)
+int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
 {
     int fdin;
     char *pInfile;
@@ -63,7 +64,7 @@ int util_upload(UCHAR ucMBaddr, char *infile)
         fprintf(stderr, "Timeout waiting for response from target\n");
         ret = TRUE;
     }
-    else if (cmd_prepareflash(ucMBaddr) == BOOT_OK)
+    else if (cmd_prepareflash(ucMBaddr, ucBank) == BOOT_OK)
     {
         /* Do whole blocks first to avoid going over the end of mmap */
         while (index < len)
