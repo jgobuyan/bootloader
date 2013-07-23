@@ -131,14 +131,14 @@ int main(void)
         {
             /* Jump to user application */
             int32_t *pVectorTable = (uint32_t *) &pHdr[1];
-            JumpAddress = pVectorTable[1];
-            Jump_To_Application = (pFunction) JumpAddress;
-
+            //JumpAddress = pVectorTable[1];
+            //Jump_To_Application = (pFunction) JumpAddress;
             /* Initialize user application's Stack Pointer */
-            __set_MSP(*(__IO uint32_t *) &pVectorTable[0]);
+            //__set_MSP(*(__IO uint32_t *) &pVectorTable[0]);
             NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)pVectorTable & ~FLASH_BOOT_BASE);
             /* Jump to application */
-            Jump_To_Application();
+            //Jump_To_Application();
+            return (int)pVectorTable;
         }
     }
 
