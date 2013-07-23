@@ -97,10 +97,42 @@ LoopFillZerobss:
   cmp  r2, r3
   bcc  FillZerobss
 
-/* Call the clock system intitialization function.*/
-  bl  SystemInit   
+/* Call the clock system initialization function.*/
+  bl  SystemInit
 /* Call the application's entry point.*/
   bl  main
+BootBank:
+  //mov.w r0, #0x3200
+  //movt  r0, #0x0802
+  //mov.w r1, #0xED00
+  //movt  r1, #0xE000
+  //str   r0, [r1, #8]
+/* main() returns the bank's vector table */
+
+/* Load stack pointer from vector table */
+  ldr r1, [r0]
+  msr MSP, r1
+
+/* Reset registers */
+  mov r1, #0
+  mov r2, #0
+  mov r3, #0
+  mov r4, #0
+  mov r5, #0
+  mov r6, #0
+  mov r7, #0
+  mov r8, #0
+  mov r9, #0
+  mov r10, #0
+  mov r11, #0
+  mov r12, #0
+  mov lr, #-1
+
+/* Load start address from vector table and jump */
+  ldr r0,[r0, #4]
+  bx  r0
+
+/* Shouldn't get here */
   bx  lr    
 .size  Reset_Handler, .-Reset_Handler
 
