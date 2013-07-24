@@ -27,7 +27,7 @@ static ULONG bf_keylength;
  */
 void util_str2key(CHAR *keystring, UCHAR *keyarray, ULONG *keylength)
 {
-    UCHAR i = 0;
+    ULONG i = 0;
     UCHAR ucNibble;
     UCHAR done = FALSE;
     while ((*keystring != 0) && !done)

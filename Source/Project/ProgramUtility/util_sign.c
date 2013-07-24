@@ -73,7 +73,7 @@ int get_key(const uint8_t *buf)
             modulus, mod_len, pub_exp, pub_len, priv_exp, priv_len);
     pKeyfile->rsa_modulus_size = mod_len;
     pKeyfile->rsa_exponent_size = pub_len;
-    printf("mod_len=%ld pub_len=%ld priv_len=%ld\n", pKeyfile->rsa_modulus_size,
+    printf("mod_len=%ld pub_len=%ld priv_len=%d\n", pKeyfile->rsa_modulus_size,
             pKeyfile->rsa_exponent_size, priv_len);
 
     /* Copy modulus to keyfile */
@@ -125,6 +125,7 @@ void free_key(void)
 int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *bf_keystring)
 {
     int fdout;
+    UCHAR ucStatus;
     BOOL ret = FALSE;
     /* Clear memory first */
     memset(keyarray, 0, KEYARRAY_SIZE);
@@ -163,9 +164,16 @@ int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *b
         {
             DEBUG_PUTSTRING1("Key Block ", index);
             retry = NUM_RETRIES;
-            while (cmd_setkeys(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
-                    &keyarray[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
+            ucStatus = cmd_setkeys(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
+                    &keyarray[index], UPLOAD_BLOCK_SIZE);
+            while (ucStatus != BOOT_OK)
             {
+                if (ucStatus == BOOT_LOCKED)
+                {
+                    fprintf(stderr, "Error: Keys are now locked.\n");
+                    ret = TRUE;
+                    break;
+                }
                 if ((--retry) == 0)
                 {
                     fprintf(stderr, "Too many retries at block %d\n",
@@ -175,6 +183,8 @@ int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *b
                 }
                 printf("R");
                 fflush(stdout);
+                ucStatus = cmd_setkeys(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
+                        &keyarray[index], UPLOAD_BLOCK_SIZE);
             }
             if (ret)
             {
@@ -198,9 +208,7 @@ int util_set_rsakey(char *rsa_keyfile)
 {
     int ret = FALSE;
     int fdin;
-    int len;
-    int offset = 0;
-    char *pInfile;
+    uint8_t *pInfile;
     struct stat sb;
     fdin = open(rsa_keyfile, O_RDONLY);
     if (fdin == -1)
@@ -234,7 +242,7 @@ void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile)
     /* Calculate message digest over the code image */
     MD5_Init(&md5_context);
     MD5_Update(&md5_context, &data[sizeof(fwHeader)], pHeader->info.length);
-    MD5_Final(&sig.md5_digest, &md5_context);
+    MD5_Final(&sig.md5_digest[0], &md5_context);
 
     printf("Digest: ");
     for (i = 0; i < MD5_SIZE; i++)

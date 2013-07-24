@@ -148,9 +148,11 @@ void boardInit(void)
 void platform_init(void)
 {
     /*------------------- Resources Initialization -----------------------------*/
-    /* Enable GPIOA, GPIOB and GPIOC clocks */
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | \
-                          RCC_AHBPeriph_GPIOE | RCC_AHBPeriph_GPIOF, ENABLE);
+    /* Enable GPIO clocks */
+    RCC_AHBPeriphClockCmd(
+            RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC
+                    | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOE
+                    | RCC_AHBPeriph_GPIOF, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
     boardInit();

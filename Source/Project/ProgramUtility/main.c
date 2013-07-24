@@ -1,6 +1,10 @@
 /**
  * Program Utility main.c
  *
+ * This program is a multipurpose utility that runs on a workstation. It
+ * creates firmware images and key files and provides the capability to
+ * upload them to the STM32.
+ *
  *  Created on: 2013-04-05
  *      Author: jeromeg
  */
@@ -31,6 +35,7 @@
 #define FLAG_ENCRYPT        0x00000010
 #define FLAG_SIGN           0x00000020
 #define FLAG_CREATE_KEYFILE 0x00000040
+#define FLAG_LOCK_KEYFILE   0x00000080
 #define FLAG_VALIDATE       0x80000000  /* Debug */
 
 /* ----------------------- Static variables ---------------------------------*/
@@ -56,6 +61,16 @@ static void    *pvPollingThread( void *pvParameter );
 uint8_t debugflags = 0;
 char *devString;
 /* ----------------------- Start implementation -----------------------------*/
+
+/**
+ * bSetSignal
+ *
+ * Assigns a function to be called when a given signal is raised.
+ *
+ * @param iSignalNr - Signal number
+ * @param pSigHandler - Signal handler function
+ * @return TRUE if successful, FALSE if not.
+ */
 BOOL
 bSetSignal( int iSignalNr, void ( *pSigHandler ) ( int ) )
 {
@@ -76,6 +91,12 @@ bSetSignal( int iSignalNr, void ( *pSigHandler ) ( int ) )
     return bResult;
 }
 
+/**
+ * vSigShutdown
+ *
+ * Signal handler to shut down threads.
+ * @param xSigNr
+ */
 void
 vSigShutdown( int xSigNr )
 {
@@ -90,21 +111,47 @@ vSigShutdown( int xSigNr )
     }
 }
 
+/**
+ * print_usage
+ *
+ * Display usage info for the utility
+ */
 void print_usage(void)
 {
     printf("Usage:\n\nprog_util <options> <infile> <outfile>\n\n");
-    printf("-a <version-string> <infile> <outfile>  - add image header to binary\n");
-    printf("-e <key> -s <rsa-file> -k <outfile>     - create binary key file\n");
-    printf("-c <file>                               - check image\n");
-    printf("-v <bank>                               - query version\n");
-    printf("-u <infile>                             - upload and program flash\n");
     printf("\nOptions:\n");
-    printf("-p <port>                               - Serial port number\n");
+    printf("-a <version-string>                     - add image header to binary\n");
+    printf("-b <bank>                               - Bank number\n"
+           "                                          0 = Bootloader\n"
+           "                                          1 = Bank A\n"
+           "                                          2 = Bank B\n"
+           "                                          3 = Bank F\n");
+    printf("-c                                      - check image\n");
     printf("-e <key>                                - Blowfish key\n");
-    printf("-s <rsa-file>                           - RSA key file (DER format)\n");
+    printf("-k                                      - create/upload binary key file\n");
+    printf("-l                                      - lock keys\n");
+    printf("-p <port>                               - Serial port number or full name\n");
+    printf("-s <rsa-file>                           - RSA signing key file (DER format)\n");
+    printf("-u                                      - upload and program flash\n");
+    printf("-v                                      - query version\n");
     printf("-D                                      - display debug\n");
     printf("\nNotes:\n");
     printf("Blowfish and RSA keys must be specified when -k is used.\n");
+    printf("\nExamples:\n\n"
+           "Add image header to binary\n"
+           "    prog_util -a \"My Label\" file.bin file.img\n\n"
+           "Add image header to binary, sign with RSA and encrypt with Blowfish\n"
+           "    prog_util -e 01234567 -s rsa.der -a \"My Label\" file.bin file.img\n\n"
+           "Upload RSA and Blowfish keys over serial port\n"
+           "    prog_util -e 01234567 -s rsa.der -k -p /dev/ttyS4\n\n"
+           "Lock RSA and Blowfish keys over serial port\n"
+           "    prog_util -l -p /dev/ttyS4\n\n"
+           "Upload image to least recent bank over serial port\n"
+           "    prog_util -p /dev/ttyS4 -u file.img\n\n"
+           "Upload image to Bank A over serial port\n"
+           "    prog_util -p /dev/ttyS4 -b 1 -u file.img\n\n"
+            );
+
 }
 
 int
@@ -112,12 +159,12 @@ main( int argc, char *argv[] )
 {
     int     iExitCode = EXIT_SUCCESS;
     UCHAR   ucMBAddr = 1;
-    CHAR    cCh;
     ULONG   ulOptFlags = 0;
     UCHAR   ucBank = 0;
     UCHAR   ucStartThread = FALSE;
     CHAR   *pucVersion;
-    int     index;
+    UCHAR  ucStatus;
+
     int     c;
     int     timeout;
     char   *infile = NULL;
@@ -125,10 +172,11 @@ main( int argc, char *argv[] )
     char   *endptr;
     opterr = 0;
     ucPort = 2; /* Default to first USB serial dongle */
+    printf("Secure Bootloader Program Utility\n\n");
     /*
      * Process command line options
      */
-    while ((c = getopt(argc, argv, "a:b:ce:kp:s:uv:DV")) != -1)
+    while ((c = getopt(argc, argv, "a:b:ce:klp:s:uvDV")) != -1)
     {
         switch (c)
         {
@@ -144,6 +192,10 @@ main( int argc, char *argv[] )
             break;
         case 'k':
             ulOptFlags |= FLAG_CREATE_KEYFILE;
+            break;
+        case 'l':
+            ulOptFlags |= FLAG_LOCK_KEYFILE;
+            ucStartThread = TRUE;
             break;
         case 'e':
             ulOptFlags |= FLAG_ENCRYPT;
@@ -168,7 +220,6 @@ main( int argc, char *argv[] )
             break;
         case 'v':
             ulOptFlags |= FLAG_GET_VERSION;
-            ucBank = strtoul(optarg, NULL, 0);
             ucStartThread = TRUE;
             break;
         case 'D':
@@ -265,8 +316,17 @@ main( int argc, char *argv[] )
         if (ulOptFlags & FLAG_GET_VERSION)
         {
             timeout = 10;
-            while ((cmd_getheader(ucMBAddr, ucBank) == BOOT_TIMEOUT)
-                    && (--timeout));
+            ucStatus = cmd_getheader(ucMBAddr, ucBank);
+            while ((ucStatus == BOOT_TIMEOUT)
+                    && (--timeout))
+            {
+                ucStatus = cmd_getheader(ucMBAddr, ucBank);
+            }
+            if (ucStatus != BOOT_OK)
+            {
+                fprintf(stderr, "Get Version Failed: %d", ucStatus);
+            }
+
         }
         else if (ulOptFlags & FLAG_UPLOAD)
         {
@@ -294,6 +354,21 @@ main( int argc, char *argv[] )
         {
             util_createkeyfile(ucMBAddr, infile, pRSAKeyFile, pBlowfishKeyString);
         }
+        else if (ulOptFlags & FLAG_LOCK_KEYFILE)
+        {
+            timeout = 10;
+            ucStatus = cmd_lockkeys(ucMBAddr);
+            while ((ucStatus == BOOT_TIMEOUT)
+                    && (--timeout))
+            {
+                ucStatus = cmd_lockkeys(ucMBAddr);
+            }
+            if (ucStatus != BOOT_OK)
+            {
+                fprintf(stderr, "Lock Failed: %d", ucStatus);
+            }
+
+        }
         if (ulOptFlags & FLAG_CHECK_HEADER)
         {
             if (infile)
@@ -319,8 +394,11 @@ main( int argc, char *argv[] )
     return iExitCode;
 }
 
+/**
+ * Create polling thread
+ * @return
+ */
 BOOL
-
 bCreatePollingThread( void )
 {
     BOOL            bResult;
@@ -345,6 +423,11 @@ bCreatePollingThread( void )
     return bResult;
 }
 
+/**
+ * Poll the modbus.
+ *
+ * @param pvParameter
+ */
 void           *
 pvPollingThread( void *pvParameter )
 {
@@ -367,6 +450,10 @@ pvPollingThread( void *pvParameter )
     return 0;
 }
 
+/**
+ * Get polling thread state
+ * @return
+ */
 enum ThreadState
 eGetPollingThreadState(  )
 {
@@ -379,6 +466,10 @@ eGetPollingThreadState(  )
     return eCurState;
 }
 
+/**
+ * Set polling thread state
+ * @param eNewState
+ */
 void
 vSetPollingThreadState( enum ThreadState eNewState )
 {

@@ -47,6 +47,6 @@ eMBException cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
 BOOL cmd_timeout_callback( UCHAR * pucFrame, USHORT * pusLength );
-BOOL cmd_illegalfunc_callback( UCHAR * pucFrame, USHORT * pusLength );
+BOOL cmd_illegalfunc_callback(void);
 
 #endif /* COMMANDS_H_ */
