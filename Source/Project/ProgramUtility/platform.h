@@ -1,6 +1,7 @@
 #ifndef __PLATFORM_H
 #define __PLATFORM_H
 #include <stdio.h>
+#include <stdint.h>
 
 extern uint8_t debugflags;
 #define DEBUG_PUTSTRING(s)  if (debugflags) printf("%s\n", s)

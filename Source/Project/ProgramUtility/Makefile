@@ -41,7 +41,7 @@ LDLIBS		= -L$(SECDIR)/axTLS/ports/linux -laxtls
 LDFLAGS		= 
 ifeq ($(CYGWIN_BUILD),YES)
 else
-LDFLAGS     += -lpthread
+LDLIBS      += -lpthread
 CFLAGS      += -pthread
 endif
 

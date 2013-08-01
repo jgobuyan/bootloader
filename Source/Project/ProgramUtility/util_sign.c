@@ -19,7 +19,7 @@
 #include "crypto_misc.h"
 #include "keyfile.h"
 #include "commands.h"
-#include "fwHeader.h"
+#include "fwheader.h"
 #include "encryption.h"
 #include "platform.h"
 

@@ -39,6 +39,7 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include "crypto.h"
 #include "bigint.h"
 
