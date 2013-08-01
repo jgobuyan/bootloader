@@ -39,6 +39,7 @@ CFLAGS	    = -MD -g3 -Wall \
 LDFLAGS     =
 LDLIBS		= -L$(SECDIR)/axTLS/ports/linux -laxtls
 LDFLAGS		= 
+LIBAXTLS    = $(SECDIR)/axTLS/ports/linux/libaxtls.a
 ifeq ($(CYGWIN_BUILD),YES)
 else
 LDLIBS      += -lpthread
@@ -86,7 +87,7 @@ all: $(BIN)
 debug:
 	$(INSIGHT) --se=$(TGT)
 
-$(BIN): $(OBJS) $(NOLINK_OBJS)
+$(BIN): $(OBJS) $(NOLINK_OBJS) $(LIBAXTLS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
 clean:
@@ -106,6 +107,11 @@ install:
 %.o:    %.S
 	$(CC) $(ASFLAGS) -o $@ -c $<
 
+# ---------------------------------------------------------------------------
+# rules for library files
+# ---------------------------------------------------------------------------
+$(LIBAXTLS):
+	cd $(SECDIR)/axTLS/ports/linux && make
 # ---------------------------------------------------------------------------
 #  # compiler generated dependencies
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /**
- * Program Utility main.c
+ * @file main.c
  *
  * This program is a multipurpose utility that runs on a workstation. It
  * creates firmware images and key files and provides the capability to
@@ -9,6 +9,24 @@
  *      Author: jeromeg
  */
 
+/**
+ * @mainpage
+ *
+ * # Program Utility for the STM32 Secure Bootloader
+ *
+ * Usage: prog_util {options} {infile} {outfile}
+ *
+ * ## Options
+ *
+ * -a {version-string}
+ * -b {bank-number}
+ * -c                   Check image
+ */
+
+/**
+ * @addtogroup main
+ * @{
+ */
 
 /* ----------------------- Standard includes --------------------------------*/
 #include <stdio.h>
@@ -28,23 +46,23 @@
 /* ----------------------- Defines ------------------------------------------*/
 #define PROG            "prog_util"
 
-#define FLAG_GET_VERSION    0x00000001
-#define FLAG_ADD_HEADER     0x00000002
-#define FLAG_CHECK_HEADER   0x00000004
-#define FLAG_UPLOAD         0x00000008
-#define FLAG_ENCRYPT        0x00000010
-#define FLAG_SIGN           0x00000020
-#define FLAG_CREATE_KEYFILE 0x00000040
-#define FLAG_LOCK_KEYFILE   0x00000080
-#define FLAG_VALIDATE       0x80000000  /* Debug */
+#define FLAG_GET_VERSION    0x00000001  /**< Get Version Header         */
+#define FLAG_ADD_HEADER     0x00000002  /**< Add header to binary       */
+#define FLAG_CHECK_HEADER   0x00000004  /**< Check header               */
+#define FLAG_UPLOAD         0x00000008  /**< Upload software image      */
+#define FLAG_ENCRYPT        0x00000010  /**< Encrypt image              */
+#define FLAG_SIGN           0x00000020  /**< Sign image                 */
+#define FLAG_CREATE_KEYFILE 0x00000040  /**< Create/Upload key file     */
+#define FLAG_LOCK_KEYFILE   0x00000080  /**< Lock key file              */
+#define FLAG_VALIDATE       0x80000000  /**< Validate signature (debug) */
 
 /* ----------------------- Static variables ---------------------------------*/
 
 static enum ThreadState
 {
-    STOPPED,
-    RUNNING,
-    SHUTDOWN
+    STOPPED,//!< STOPPED
+    RUNNING,//!< RUNNING
+    SHUTDOWN//!< SHUTDOWN
 } ePollThreadState;
 
 static pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
@@ -154,6 +172,15 @@ void print_usage(void)
 
 }
 
+/**
+ * Main entry point for Program Utility.
+ *
+ * Process option flags and execute commands.
+ *
+ * @param argc
+ * @param argv
+ * @return
+ */
 int
 main( int argc, char *argv[] )
 {
@@ -478,3 +505,6 @@ vSetPollingThreadState( enum ThreadState eNewState )
     ( void )pthread_mutex_unlock( &xLock );
 }
 
+/**
+ * @}
+ */

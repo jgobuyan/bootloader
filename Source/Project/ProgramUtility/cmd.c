@@ -1,5 +1,5 @@
 /**
- * cmd.c
+ * @file cmd.c
  *
  * Functions to keep track of commands sent to the device.
  *
@@ -7,6 +7,10 @@
  *      Author: jeromeg
  */
 
+/**
+ * @addtogroup BootloaderCommand
+ * @{
+ */
 #include "bootloader.h"
 static BOOL     xCmd_in_progress = 0;
 static UCHAR    ucCmd_status;
@@ -49,6 +53,10 @@ UCHAR cmd_status_wait(void)
     return ucCmd_status;
 }
 
+/**
+ * Command timeout callback. Called when the timeout expires.
+ * @return
+ */
 BOOL cmd_timeout_callback(void)
 {
     ucCmd_status = BOOT_TIMEOUT;
@@ -56,9 +64,18 @@ BOOL cmd_timeout_callback(void)
     return TRUE;
 }
 
+/**
+ * Illegal function callback. Called when response frame type is not
+ * recognized.
+ * @return
+ */
 BOOL cmd_illegalfunc_callback(void )
 {
     ucCmd_status = BOOT_INVALID;
     xCmd_in_progress = 0;
     return TRUE;
 }
+
+/**
+ * @}
+ */

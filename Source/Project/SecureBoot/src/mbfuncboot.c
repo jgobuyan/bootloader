@@ -1,3 +1,13 @@
+/**
+ * @file    SecureBoot/src/mbfuncboot.c
+ * @author  Jerome Gobuyan
+ * @version V1.0.0
+ * @date    2013-07-27
+ * @brief   ModBus Functions
+  */
+/** @addtogroup ModBus
+  * @{
+  */
 /* 
  * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
  * Copyright (c) 2006 Christian Walter <wolti@sil.at>
@@ -51,7 +61,7 @@
 #include "encryption.h"
 
 /* ----------------------- Defines ------------------------------------------*/
-#define FLASH_EMPTY     0xffffffff
+#define FLASH_EMPTY     0xffffffff  /**< Flash word in erased state */
 
 /* ----------------------- Static functions ---------------------------------*/
 
@@ -496,6 +506,11 @@ fwHeader *getImageHeader(UCHAR ucBank)
     return ret;
 }
 
+/**
+ * Initialize ModBus for SecureBoot.
+ *
+ * Register bootloader functions and set variables to default values.
+ */
 void mbBootInit(void)
 {
     eMBRegisterCB( MB_FUNC_BOOT_GETHEADER, eMBFuncBootGetHeader);
@@ -506,4 +521,8 @@ void mbBootInit(void)
     eMBRegisterCB( MB_FUNC_BOOT_LOCKKEYS, eMBFuncBootLockKeys);
     ucCurrentBank = BANK_BOOT;
 }
+
+/**
+  * @}
+  */
 

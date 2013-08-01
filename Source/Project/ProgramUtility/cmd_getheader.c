@@ -1,17 +1,28 @@
 /**
- * cmd_getheader.c
+ * @file cmd_getheader.c
+ *
+ * Get firmware header from board.
  *
  *  Created on: 2013-04-06
  *      Author: jeromeg
  */
 
+/**
+ * @addtogroup BootloaderCommand
+ * @{
+ */
 #include <stdio.h>
 #include "bootloader.h"
 #include "fwheader.h"
 #include "commands.h"
 #include "platform.h"
+
 /**
- * Send Get Header request
+ * Send Get Header request and wait for response.
+ *
+ * @param ucMBaddr - ModBus address
+ * @param ucBank - Bank: 0=Bootloader, 1=A, 2=B, 3=F
+ * @return response status
  */
 UCHAR cmd_getheader(UCHAR ucMBaddr, UCHAR ucBank)
 {
@@ -29,9 +40,9 @@ UCHAR cmd_getheader(UCHAR ucMBaddr, UCHAR ucBank)
 }
 
 /**
- * Process Get Header response
- * @param pucFrame
- * @param pusLength
+ * Process Get Header response callback
+ * @param pucFrame - pointer to ModBus response frame
+ * @param pusLength - length ofr response frame
  * @return
  */
 eMBException
@@ -57,3 +68,7 @@ cmd_getheader_callback( UCHAR * pucFrame, USHORT * pusLength )
     cmd_done(pFrame->status);
     return MB_EX_NONE;
 }
+
+/**
+ * @}
+ */

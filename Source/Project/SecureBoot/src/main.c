@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file    STM32F3xx_IAP/src/main.c
+ * @file    SecureBoot/src/main.c
  * @author  MCD Application Team
  * @version V1.0.0
  * @date    02-October-2012
@@ -34,7 +34,8 @@
 #include "flashmap.h"
 #include "fwHeader.h"
 
-/** @addtogroup STM32F3xx_IAP
+/**
+ * @addtogroup SecureBoot
  * @{
  */
 

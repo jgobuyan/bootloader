@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    STM32F3xx_IAP/src/common.c 
+  * @file    SecureBoot/src/common.c
   * @author  MCD Application Team
   * @version V1.0.0
   * @date    02-October-2012
@@ -28,7 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "common.h"
 
-/** @addtogroup STM32F3xx_IAP
+/** @addtogroup SecureBoot
   * @{
   */
   

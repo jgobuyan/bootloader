@@ -286,11 +286,15 @@ UADEFS =
 UINCDIR =
 
 # List the user directory to look for the libraries here
-ULIBDIR = $(SECDIR)/axTLS/ports/STM32_port $(CCANDIR)/$(CHIP)_port 
+AXTLSPORTDIR = $(SECDIR)/axTLS/ports/STM32_port
+CCANPORTDIR = $(CCANDIR)/$(CHIP)_port
+ULIBDIR =  $(AXTLSPORTDIR) $(CCANPORTDIR)
 
 # List all user libraries here
 ULIBS = -laxtls -lccan 
 
+LIBAXTLS = $(AXTLSPORTDIR)/libaxtls.a
+LIBCCAN = $(CCANPORTDIR)/libccan.a
 #
 # End of user defines
 ##############################################################################
@@ -304,6 +308,14 @@ endif
 
 include modbus.mk
 include rules.mk
+
+libs: $(LIBAXTLS) $(LIBCCAN)
+
+$(LIBAXTLS):
+	cd $(AXTLSPORTDIR) && make
+
+$(LIBCCAN):
+	cd $(CCANPORTDIR) && make
 
 build_version.c: FORCE
 	@echo "#include \"bootloader.h\"" > build_version.c

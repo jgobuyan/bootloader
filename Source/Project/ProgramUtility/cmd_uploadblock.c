@@ -1,10 +1,14 @@
 /**
- * cmd_uploadblock.c
+ * @file cmd_uploadblock.c
  *
  *  Created on: 2013-04-06
  *      Author: jeromeg
  */
 
+/**
+ * @addtogroup BootloaderCommand
+ * @{
+ */
 #include <stdio.h>
 #include <string.h>
 #include "bootloader.h"
@@ -12,6 +16,11 @@
 #include "commands.h"
 #include "platform.h"
 
+/**
+ * Display bytes in buffer
+ * @param buf - pointer to buffer
+ * @param len - length of buffer
+ */
 void     display_bytes(void *buf, int len)
 {
 #if 0
@@ -28,6 +37,7 @@ void     display_bytes(void *buf, int len)
     printf("\n");
 #endif
 }
+
 /**
  * Send upload block request
  *
@@ -80,3 +90,7 @@ cmd_uploadblock_callback( UCHAR * pucFrame, USHORT * pusLength )
     cmd_done(pFrame->status);
     return MB_EX_NONE;
 }
+
+/**
+ * @}
+ */

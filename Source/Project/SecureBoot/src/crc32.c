@@ -1,5 +1,14 @@
-/*
- * crc32 functions implemented in STM32F37x hardware
+/**
+ * @file    SecureBoot/src/crc32.c
+ * @author  Jerome Gobuyan
+ * @version V1.0.0
+ * @date    2013-07-27
+ * @brief CRC32 functions implemented in STM32F37x hardware
+ */
+
+/**
+ * @addtogroup SecureBoot
+ * @{
  */
 
 #include "crc32.h"
@@ -7,11 +16,18 @@
 #include "stm32f37x_crc.h"
 #include "platform.h" /* Debug */
 
-#define CRC32_POLYNOMIAL    0x04c11db7
-//#define CRC32_POLYNOMIAL    0xedb88320
-#define CRC_INIT_VALUE      0xffffffff
-#define CRC_INIT_VALUE_IEEE 0x00000000
+#define CRC32_POLYNOMIAL    0x04c11db7  /**< Ethernet CRC-32 Polynomial */
+#define CRC_INIT_VALUE      0xffffffff  /**< CRC-32 Initial value       */
 
+/**
+ * Calculate or check CRC across the buffer. The CRC32 field is assumed to be
+ * at the end of the buffer. To generate, do not include CRC32 field in the
+ * length and put the calculated value into it. To check, include the CRC32 field
+ * in the length and check if the resulting CRC is zero.
+ * @param buf - pointer to buffer
+ * @param size - size of data in buffer
+ * @return CRC
+ */
 uint32_t crc32(const void *buf, ULONG size)
 {
     USHORT i;
@@ -58,3 +74,7 @@ uint32_t crc32(const void *buf, ULONG size)
     DEBUG_PUTSTRING1("CRC32: ", crc);
     return crc;
 }
+
+/**
+ * @}
+ */

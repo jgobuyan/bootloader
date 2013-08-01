@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    STM32F3xx_IAP/inc/flash_If.h 
+  * @file    SecureBoot/inc/flash_If.h
   * @author  MCD Application Team
   * @version V1.0.0
   * @date    02-October-2012
