@@ -272,7 +272,7 @@
                                      PIN_PUPDR_FLOATING(GPIOA_LED2_X) |     \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWDIO) |      \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWCLK) |      \
-                                     PIN_PUPDR_FLOATING(GPIOA_JTAG_TDI))
+                                     PIN_PUPDR_PULLUP(GPIOA_JTAG_TDI))
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_PWM_OUT) |          \
                                      PIN_ODR_HIGH(GPIOA_LS_PWM_P) |         \
                                      PIN_ODR_HIGH(GPIOA_LED_1) |            \

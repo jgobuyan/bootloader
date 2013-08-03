@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    STM32F3xx_IAP/inc/common.h 
+  * @file    SecureBoot/inc/common.h
   * @author  MCD Application Team
   * @version V1.0.0
   * @date    02-October-2012
@@ -47,7 +47,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Constants used by Serial Command Line Mode */
-#define CMD_STRING_SIZE       128
+#define CMD_STRING_SIZE       128   /**< Command String Size */
 
 /* Exported macro ------------------------------------------------------------*/
 /* Common routines */
@@ -57,7 +57,6 @@
 #define ISVALIDHEX(c)  IS_AF(c) || IS_af(c) || IS_09(c)
 #define ISVALIDDEC(c)  IS_09(c)
 #define CONVERTDEC(c)  (c - '0')
-
 #define CONVERTHEX_alpha(c)  (IS_AF(c) ? (c - 'A'+10) : (c - 'a'+10))
 #define CONVERTHEX(c)   (IS_09(c) ? (c - '0') : CONVERTHEX_alpha(c))
 

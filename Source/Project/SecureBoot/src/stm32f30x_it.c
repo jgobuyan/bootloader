@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    STM32F3xx_IAP/src/stm32f30x_it.c 
+  * @file    SecureBoot/src/stm32f30x_it.c
   * @author  MCD Application Team
   * @version V1.0.0
   * @date    02-October-2012
@@ -30,7 +30,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x_it.h"
 
-/** @addtogroup Template_Project
+/** @addtogroup SecureBoot
   * @{
   */
 

@@ -1,10 +1,14 @@
 /**
- * cmd_prepareflash.c
+ * @file cmd_prepareflash.c
  *
  *  Created on: 2013-04-06
  *      Author: jeromeg
  */
 
+/**
+ * @addtogroup BootloaderCommand
+ * @{
+ */
 #include <stdio.h>
 #include "bootloader.h"
 #include "fwheader.h"
@@ -33,9 +37,9 @@ UCHAR cmd_prepareflash(UCHAR ucMBaddr, UCHAR ucBank)
 }
 
 /**
- * Process Get Header response
- * @param pucFrame
- * @param pusLength
+ * Get Header response callback
+ * @param pucFrame - pointer to response frame
+ * @param pusLength - response frame length
  * @return
  */
 eMBException
@@ -55,3 +59,7 @@ cmd_prepareflash_callback( UCHAR * pucFrame, USHORT * pusLength )
     cmd_done(pFrame->status);
     return MB_EX_NONE;
 }
+
+/**
+ * @}
+ */

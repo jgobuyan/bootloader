@@ -1,11 +1,17 @@
 /**
- * cmd_keys.c
+ * @file cmd_keys.c
+ *
  * Encryption/signature key management
  *
  *  Created on: 2013-07-18
  *      Author: jeromeg
  */
 
+/**
+ *
+ * @addtogroup BootloaderCommand
+ * @{
+ */
 #include <stdio.h>
 #include <string.h>
 #include "bootloader.h"
@@ -60,9 +66,10 @@ UCHAR cmd_lockkeys(UCHAR ucMBaddr)
 }
 
 /**
- * Process Set Keys response
- * @param pucFrame
- * @param pusLength
+ * Set Keys response callback.
+ *
+ * @param pucFrame - pointer to response frame
+ * @param pusLength - response frame length
  * @return
  */
 eMBException
@@ -83,9 +90,9 @@ cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength )
 }
 
 /**
- * Process Lock Keys response
- * @param pucFrame
- * @param pusLength
+ * Lock Keys response callback.
+ * @param pucFrame - pointer to response frame
+ * @param pusLength - response frame length
  * @return
  */
 eMBException
@@ -104,3 +111,7 @@ cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength )
     cmd_done(pFrame->status);
     return MB_EX_NONE;
 }
+
+/**
+ * @}
+ */

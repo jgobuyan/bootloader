@@ -1,17 +1,24 @@
 /**
- * cmd_getheader.c
+ * @file cmd_getheader.c
  *
  *  Created on: 2013-04-06
  *      Author: jeromeg
  */
 
+/**
+ * @addtogroup BootloaderCommand
+ */
 #include <stdio.h>
 #include "bootloader.h"
 #include "fwheader.h"
 #include "commands.h"
 #include "platform.h"
+
 /**
  * Send Validate Image request
+ *
+ * @param ucMBaddr
+ * @return
  */
 UCHAR cmd_validatesig(UCHAR ucMBaddr)
 {
@@ -28,7 +35,7 @@ UCHAR cmd_validatesig(UCHAR ucMBaddr)
 }
 
 /**
- * Process Get Validate Image response
+ * Get Validate Image response callback
  * @param pucFrame
  * @param pusLength
  * @return
@@ -50,3 +57,7 @@ cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength )
     cmd_done(pFrame->status);
     return MB_EX_NONE;
 }
+
+/**
+ * @}
+ */
