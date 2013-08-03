@@ -89,7 +89,7 @@ eMBErrorCode
 eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity )
 {
     eMBErrorCode    eStatus = MB_ENOERR;
-
+    ULONG           ulTimerT35_50us;
     ( void )ucSlaveAddress;
     ENTER_CRITICAL_SECTION(  );
 
@@ -98,10 +98,23 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
     {
         eStatus = MB_EPORTERR;
     }
-    /*
-     * STM32F37x port uses Rx timeout instead of a timer, so no call is
-     * made to xMBPortTimersInit().
-     */
+    if( ulBaudRate > 19200 )
+    {
+        /* The timer reload value for a character is given by:
+         *
+         * ChTimeValue = Ticks_per_1s / ( Baudrate / 11 )
+         *             = 11 * Ticks_per_1s / Baudrate
+         *             = 220000 / Baudrate
+         * The reload for t3.5 is 1.5 times this value and similarly
+         * for t3.5.
+         */
+         ulTimerT35_50us = ( 7UL * 220000UL ) / ( 2UL * ulBaudRate );
+    }
+    DEBUG_PUTSTRING1("T35 = ", ulTimerT35_50us);
+    if( xMBPortTimersInit( ( USHORT ) ulTimerT35_50us ) != TRUE )
+    {
+         eStatus = MB_EPORTERR;
+    }
     EXIT_CRITICAL_SECTION(  );
 
     return eStatus;
