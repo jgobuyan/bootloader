@@ -1,8 +1,12 @@
 /**
- * util_addheader.c
+ * @file util_addheader.c
  *
+ * Utility to add a header to a software image.
  *  Created on: 2013-04-09
  *      Author: jeromeg
+ *
+ * @addtogroup UtilityFunction
+ * @{
  */
 
 #include <stdio.h>
@@ -16,7 +20,6 @@
 #include "crc32.h"
 #include "bootloader.h"
 #include "commands.h"
-#define CRC_INIT_VALUE  0x00000000
 
 /**
  * Add firmware header to a binary. Optionally sign and encrypt.
@@ -170,3 +173,7 @@ int util_checkheader(char *infile)
     }
     return ret;
 }
+
+/**
+ * @}
+ */

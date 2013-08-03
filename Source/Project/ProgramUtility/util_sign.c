@@ -1,9 +1,12 @@
 /**
- * util_sign.c
+ * @file util_sign.c
  *
  * Signature and Key File Utilities
  *  Created on: 2013-04-12
  *      Author: jeromeg
+ *
+ * @addtogroup UtilityFunction
+ * @{
  */
 
 #include <sys/types.h>
@@ -23,7 +26,7 @@
 #include "encryption.h"
 #include "platform.h"
 
-#define NUM_RETRIES 5
+#define NUM_KEY_RETRIES 5   /**< Number of times to retry key uploads */
 /**
  * RSA Key context pointer
  */
@@ -163,7 +166,7 @@ int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *b
         while (index < KEYARRAY_SIZE)
         {
             DEBUG_PUTSTRING1("Key Block ", index);
-            retry = NUM_RETRIES;
+            retry = NUM_KEY_RETRIES;
             ucStatus = cmd_setkeys(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &keyarray[index], UPLOAD_BLOCK_SIZE);
             while (ucStatus != BOOT_OK)
@@ -259,3 +262,7 @@ void util_sign(UCHAR *data, ULONG size, char *rsa_keyfile)
             pHeader->sig, TRUE);
     printf("Signature length=%d\n", pHeader->siglength);
 }
+
+/**
+ * @}
+ */

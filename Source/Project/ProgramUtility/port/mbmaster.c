@@ -68,11 +68,14 @@ static eMBMode  eMBCurrentMode;
 //static UCHAR *pucFrameToSend = NULL;
 //static USHORT usFrameLength = NULL;
 
+/**
+ * ModBus states
+ */
 static enum
 {
-    STATE_ENABLED,
-    STATE_DISABLED,
-    STATE_NOT_INITIALIZED
+    STATE_ENABLED,       //!< STATE_ENABLED
+    STATE_DISABLED,      //!< STATE_DISABLED
+    STATE_NOT_INITIALIZED//!< STATE_NOT_INITIALIZED
 } eMBState = STATE_NOT_INITIALIZED;
 
 /* Functions pointer which are initialized in eMBInit( ). Depending on the
@@ -137,6 +140,17 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
 static pxMBFunctionHandler pxIllegalFuncHandler;
 
 /* ----------------------- Start implementation -----------------------------*/
+
+/**
+ * Initialize ModBus driver
+ *
+ * @param eMode
+ * @param ucSlaveAddress
+ * @param ucPort
+ * @param ulBaudRate
+ * @param eParity
+ * @return
+ */
 eMBErrorCode eMBInit(eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate,
         eMBParity eParity)
 {
@@ -224,8 +238,13 @@ eMBTCPInit( USHORT ucTCPPort )
 }
 #endif
 
-eMBErrorCode
-eMBRegisterCB( UCHAR ucFunctionCode, pxMBFunctionHandler pxHandler )
+/**
+ * Register a callback handler for the given function code
+ * @param ucFunctionCode - Function code to register handler too
+ * @param pxHandler - Pointer to callback handler
+ * @return
+ */
+eMBErrorCode eMBRegisterCB(UCHAR ucFunctionCode, pxMBFunctionHandler pxHandler)
 {
     int             i;
     eMBErrorCode    eStatus;
@@ -270,15 +289,23 @@ eMBRegisterCB( UCHAR ucFunctionCode, pxMBFunctionHandler pxHandler )
     return eStatus;
 }
 
-eMBErrorCode
-eMBRegisterIllegalFuncCB(BOOL (*pxHandler) (void) )
+/**
+ * Register callback function when an illegal function number is received.
+ *
+ * @param pxHandler - Pointer to callback function
+ * @return MB_NOERR
+ */
+eMBErrorCode eMBRegisterIllegalFuncCB(BOOL (*pxHandler)(void))
 {
     pxIllegalFuncHandler = pxHandler;
     return MB_ENOERR;
 }
 
-eMBErrorCode
-eMBClose( void )
+/**
+ * Close ModBus driver.
+ * @return
+ */
+eMBErrorCode eMBClose(void)
 {
     eMBErrorCode    eStatus = MB_ENOERR;
 
@@ -296,8 +323,11 @@ eMBClose( void )
     return eStatus;
 }
 
-eMBErrorCode
-eMBEnable( void )
+/**
+ * Enable ModBus driver
+ * @return
+ */
+eMBErrorCode eMBEnable(void)
 {
     eMBErrorCode    eStatus = MB_ENOERR;
 
@@ -314,8 +344,11 @@ eMBEnable( void )
     return eStatus;
 }
 
-eMBErrorCode
-eMBDisable( void )
+/**
+ * Disable ModBus driver
+ * @return
+ */
+eMBErrorCode eMBDisable(void)
 {
     eMBErrorCode    eStatus;
 
@@ -336,8 +369,11 @@ eMBDisable( void )
     return eStatus;
 }
 
-eMBErrorCode
-eMBPoll( void )
+/**
+ * Poll ModBus
+ * @return
+ */
+eMBErrorCode eMBPoll(void)
 {
     static UCHAR   *ucMBFrame;
     static UCHAR    ucRcvAddress;

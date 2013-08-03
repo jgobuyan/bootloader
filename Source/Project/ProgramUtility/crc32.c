@@ -1,12 +1,12 @@
 /**
- * crc32.c
+ * @file crc32.c
  *
  *  Created on: 2013-04-11
  *      Author: jeromeg
  */
 #include "port.h"
 
-#define CRC_INIT_VALUE  0xffffffff
+#define CRC_INIT_VALUE  0xffffffff  /**< Initial value for CRC calculations */
 
 /* Nibble lookup table for 0x04C11DB7 polynomial */
 static const ULONG CrcTable[16] =
@@ -15,6 +15,12 @@ static const ULONG CrcTable[16] =
                 0x1A864DB2, 0x1E475005, 0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6,
                 0x2B4BCB61, 0x350C9B64, 0x31CD86D3, 0x3C8EA00A, 0x384FBDBD };
 
+/**
+ * Do one CRC calculation step over 32 bits.
+ * @param ulCrc - Current CRC32 value
+ * @param ulData - 32 bit integer to process
+ * @return New CRC32 value
+ */
 ULONG crc32_step(ULONG ulCrc, ULONG ulData)
 {
 
@@ -34,6 +40,12 @@ ULONG crc32_step(ULONG ulCrc, ULONG ulData)
     return (ulCrc);
 }
 
+/**
+ * Calculate CRC32 across a buffer.
+ * @param buf - Pointer to buffer
+ * @param size - Size of the valid data in the buffer.
+ * @return CRC32 value
+ */
 ULONG crc32(const void *buf, ULONG size)
 {
     ULONG i;

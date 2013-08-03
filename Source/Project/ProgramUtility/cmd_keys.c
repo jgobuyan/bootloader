@@ -5,9 +5,6 @@
  *
  *  Created on: 2013-07-18
  *      Author: jeromeg
- */
-
-/**
  *
  * @addtogroup BootloaderCommand
  * @{

@@ -1,3 +1,11 @@
+/**
+ * @file mbrtumaster.c
+ *
+ * This file implements a ModBus master.
+ *
+ * @addtogroup ModBus
+ * @{
+ */
 /* 
  * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
  * Copyright (c) 2006 Christian Walter <wolti@sil.at>
@@ -57,36 +65,59 @@
 #define MB_SER_PDU_PDU_OFF      1       /*!< Offset of Modbus-PDU in Ser-PDU. */
 
 /* ----------------------- Type definitions ---------------------------------*/
+/**
+ * ModBus receive states
+ */
 typedef enum
 {
-    STATE_RX_INIT,              /*!< Receiver is in initial state. */
-    STATE_RX_IDLE,              /*!< Receiver is in idle state. */
-    STATE_RX_RCV,               /*!< Frame is beeing received. */
-    STATE_RX_ERROR              /*!< If the frame is invalid. */
+    STATE_RX_INIT,              /*!< Receiver is in initial state. *///!< STATE_RX_INIT
+    STATE_RX_IDLE,              /*!< Receiver is in idle state. */   //!< STATE_RX_IDLE
+    STATE_RX_RCV,               /*!< Frame is beeing received. */    //!< STATE_RX_RCV
+    STATE_RX_ERROR              /*!< If the frame is invalid. */     //!< STATE_RX_ERROR
 } eMBRcvState;
 
+/**
+ * ModBus transmit states
+ */
 typedef enum
 {
-    STATE_TX_IDLE,              /*!< Transmitter is in idle state. */
-    STATE_TX_XMIT,              /*!< Transmitter is in transfer state. */
-    STATE_TX_WAIT_RX            /*!< Transmitter is waiting for response */
+    STATE_TX_IDLE,              /*!< Transmitter is in idle state. */      //!< STATE_TX_IDLE
+    STATE_TX_XMIT,              /*!< Transmitter is in transfer state. */  //!< STATE_TX_XMIT
+    STATE_TX_WAIT_RX            /*!< Transmitter is waiting for response *///!< STATE_TX_WAIT_RX
 } eMBSndState;
 
 /* ----------------------- Static variables ---------------------------------*/
 static volatile eMBSndState eSndState;
 static volatile eMBRcvState eRcvState;
 
+/**
+ * ModBus RTU buffer
+ */
 volatile UCHAR  ucRTUBuf[MB_SER_PDU_SIZE_MAX];
 
 static volatile UCHAR *pucSndBufferCur;
 static volatile USHORT usSndBufferCount;
 
 static volatile USHORT usRcvBufferPos;
+
+/**
+ * ModBus master timeout handler pointer
+ */
 void (*xMasterTimeoutHandler) (void);
 
 /* ----------------------- Start implementation -----------------------------*/
-eMBErrorCode
-eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity )
+
+/**
+ * Initialize ModBus master.
+ *
+ * @param ucSlaveAddress - Not used in master mode
+ * @param ucPort - Serial port number
+ * @param ulBaudRate - Serial port baud rate
+ * @param eParity -  MB_PAR_NONE, MB_PAR_ODD, MB_PAR_EVEN
+ * @return MB_ENOERR on success
+ */
+eMBErrorCode eMBRTUInit(UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate,
+        eMBParity eParity)
 {
     eMBErrorCode    eStatus = MB_ENOERR;
     ULONG           ulTimerT35_50us;
@@ -120,8 +151,10 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
     return eStatus;
 }
 
-void
-eMBRTUStart( void )
+/**
+ * Start ModBus master
+ */
+void eMBRTUStart(void)
 {
     DEBUG_PUTSTRING("MODBUS Start");
     ENTER_CRITICAL_SECTION(  );
@@ -143,8 +176,10 @@ eMBRTUStart( void )
     sleep(2);
 }
 
-void
-eMBRTUStop( void )
+/**
+ * Stop ModBus master
+ */
+void eMBRTUStop(void)
 {
     ENTER_CRITICAL_SECTION(  );
     vMBPortSerialEnable( FALSE, FALSE );
@@ -152,8 +187,16 @@ eMBRTUStop( void )
     EXIT_CRITICAL_SECTION(  );
 }
 
-eMBErrorCode
-eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
+/**
+ * Receive a ModBus frame.
+ *
+ * @param pucRcvAddress - Pointer to receive address
+ * @param pucFrame - Pointer to frame buffer pointer
+ * @param pusLength - Pointer to frame length
+ * @return
+ */
+eMBErrorCode eMBRTUReceive(UCHAR * pucRcvAddress, UCHAR ** pucFrame,
+        USHORT * pusLength)
 {
     BOOL            xFrameReceived = FALSE;
     eMBErrorCode    eStatus = MB_ENOERR;
@@ -190,8 +233,15 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
     return eStatus;
 }
 
-eMBErrorCode
-eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
+/**
+ * Send a ModBus frame.
+ * @param ucSlaveAddress - Slave address to send to
+ * @param pucFrame - Pointer to frame
+ * @param usLength - Frame length
+ * @return
+ */
+eMBErrorCode eMBRTUSend(UCHAR ucSlaveAddress, const UCHAR * pucFrame,
+        USHORT usLength)
 {
     eMBErrorCode    eStatus = MB_ENOERR;
     USHORT          usCRC16;
@@ -234,8 +284,12 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
     return eStatus;
 }
 
-BOOL
-xMBRTUReceiveFSM( void )
+/**
+ * Receive state machine. This is called after each character received.
+ *
+ * @return FALSE
+ */
+BOOL xMBRTUReceiveFSM(void)
 {
     BOOL            xTaskNeedSwitch = FALSE;
     UCHAR           ucByte;
@@ -295,8 +349,12 @@ xMBRTUReceiveFSM( void )
     return xTaskNeedSwitch;
 }
 
-BOOL
-xMBRTUTransmitFSM( void )
+/**
+ * Transmit state machine. This is called whenever the transmitter is ready
+ * for another character.
+ * @return FALSE
+ */
+BOOL xMBRTUTransmitFSM(void)
 {
     BOOL            xNeedPoll = FALSE;
 
@@ -354,8 +412,13 @@ xMBRTUTransmitFSM( void )
     return xNeedPoll;
 }
 
-BOOL
-xMBRTUTimerT35Expired( void )
+/**
+ * Timer expiry callback. This is called when there is an idle gap of at least
+ * 3.5 characters long since the last received character, indicating the end
+ * of a frame.
+ * @return TRUE if frame has been received or the state machine is in initial state
+ */
+BOOL xMBRTUTimerT35Expired(void)
 {
     BOOL            xNeedPoll = FALSE;
     DEBUG_PUTSTRING("Timer35 expired");
@@ -390,7 +453,12 @@ xMBRTUTimerT35Expired( void )
     return xNeedPoll;
 }
 
-
+/**
+ * Master timer expired. This is called when the slave device has
+ * not sent a response.
+ *
+ * @return status
+ */
 BOOL xMBRTUMasterTimerExpired(void)
 {
     BOOL    xStatus = FALSE;
@@ -406,9 +474,17 @@ BOOL xMBRTUMasterTimerExpired(void)
     return xStatus;
 }
 
-eMBErrorCode
-eMBRegisterTimeoutCB(BOOL (*pxHandler) (void) )
+/**
+ * Register a user timeout callback function.
+ * @param pxHandler
+ * @return
+ */
+eMBErrorCode eMBRegisterTimeoutCB(BOOL (*pxHandler)(void))
 {
     xMasterTimeoutHandler = pxHandler;
     return MB_ENOERR;
 }
+
+/**
+ * @}
+ */

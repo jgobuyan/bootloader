@@ -1,8 +1,12 @@
 /**
- * util_encrypt.c
+ * @file util_encrypt.c
  *
+ * Utility to encrypt file using Blowfish.
  *  Created on: 2013-04-12
  *      Author: jeromeg
+ *
+ * @addtogroup UtilityFunction
+ * @{
  */
 
 #include <stdio.h>
@@ -12,6 +16,7 @@
 static BLOWFISH_context bf_context;
 static UCHAR bf_key[256];
 static ULONG bf_keylength;
+
 /**
  * Convert string of hex characters and put results into
  * the specified key array.
@@ -99,3 +104,7 @@ void util_encrypt(UCHAR *pOutfile, ULONG size, char *bf_keystring)
         size -= BLOWFISH_BLOCKSIZE;
     }
 }
+
+/**
+ * @}
+ */

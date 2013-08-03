@@ -5,9 +5,7 @@
  *
  *  Created on: 2013-04-10
  *      Author: jeromeg
- */
-
-/**
+ *
  * @addtogroup BootloaderCommand
  * @{
  */
@@ -16,7 +14,8 @@ static BOOL     xCmd_in_progress = 0;
 static UCHAR    ucCmd_status;
 
 /**
- * This function is called when a command is sent.
+ * This function is called when a command is sent. It sets the initial command
+ * status to BOOT_INVALID and set the command-in-progress flag.
  */
 void cmd_start(void)
 {
@@ -25,8 +24,10 @@ void cmd_start(void)
 }
 
 /**
- * This function is called when a response is received or a timeout occurs
- * @param status
+ * This function is called when a response is received or a timeout occurs. It
+ * sets the command status to the provided value and clears the
+ * command-in-progress flag.
+ * @param status - command status value.
  */
 void cmd_done(UCHAR status)
 {
@@ -35,7 +36,7 @@ void cmd_done(UCHAR status)
 }
 
 /**
- * This function is called to get the current command status
+ * This function is called to get the current command status.
  * @return
  */
 UCHAR cmd_status(void)
@@ -44,7 +45,7 @@ UCHAR cmd_status(void)
 }
 
 /**
- * This function is called to check if a command is in progress
+ * This function is called to check if a command is in progress.
  * @return
  */
 UCHAR cmd_status_wait(void)

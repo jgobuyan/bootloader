@@ -1,12 +1,12 @@
 /**
- * @file cmd_getheader.c
+ * @file cmd_validatesig.c
  *
+ *  This file implements digital signature validation
  *  Created on: 2013-04-06
  *      Author: jeromeg
- */
-
-/**
+ *
  * @addtogroup BootloaderCommand
+ * @{
  */
 #include <stdio.h>
 #include "bootloader.h"

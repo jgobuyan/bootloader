@@ -1,8 +1,11 @@
 /**
- * util_upload.c
+ * @file util_upload.c
  *
  *  Created on: 2013-04-10
  *      Author: jeromeg
+ *
+ * @addtogroup UtilityFunction
+ * @{
  */
 
 #include <stdio.h>
@@ -16,7 +19,7 @@
 #include "bootloader.h"
 #include "commands.h"
 #include "platform.h"
-#define NUM_RETRIES 5
+#define NUM_UPLOAD_RETRIES 5    /**< Number of times to retry block uploads */
 
 /**
  * Upload file in blocks
@@ -70,7 +73,7 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
         while (index < len)
         {
             DEBUG_PUTSTRING1("Block ", index);
-            retry = NUM_RETRIES;
+            retry = NUM_UPLOAD_RETRIES;
             while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
             {
@@ -94,7 +97,7 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
         }
         if (!ret && (len < sb.st_size))
         {
-            retry = NUM_RETRIES;
+            retry = NUM_UPLOAD_RETRIES;
             DEBUG_PUTSTRING1("Block ", index / UPLOAD_BLOCK_SIZE);
             while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
                     &pInfile[index], sb.st_size - len) != BOOT_OK)
@@ -117,7 +120,7 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
         {
             printf ("\nUpload Complete.\n");
 
-            retry = NUM_RETRIES;
+            retry = NUM_UPLOAD_RETRIES;
             while (cmd_validatesig(ucMBaddr) != BOOT_OK)
             {
                 if ((--retry) == 0)
@@ -139,3 +142,7 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
 
     return ret;
 }
+
+/**
+ * @}
+ */
