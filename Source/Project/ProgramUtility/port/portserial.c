@@ -112,11 +112,13 @@ xMBPortSerialInit( UCHAR ucPort, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
     {
         vMBPortLog( MB_LOG_ERROR, "SER-INIT", "Can't open serial port %s: %s\n", szDevice,
                     strerror( errno ) );
+        bStatus = FALSE;
     }
     else if( tcgetattr( iSerialFd, &xOldTIO ) != 0 )
     {
         vMBPortLog( MB_LOG_ERROR, "SER-INIT", "Can't get settings from port %s: %s\n", szDevice,
                     strerror( errno ) );
+        bStatus = FALSE;
     }
     else
     {

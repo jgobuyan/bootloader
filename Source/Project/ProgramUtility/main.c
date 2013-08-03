@@ -48,7 +48,7 @@ static enum ThreadState
 } ePollThreadState;
 
 static pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
-static BOOL     bDoExit;
+static BOOL     bDoExit = FALSE;
 static CHAR    *pBlowfishKeyString = NULL;
 static CHAR    *pRSAKeyFile = NULL;
 static UCHAR    ucPort;
