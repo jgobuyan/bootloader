@@ -10,5 +10,12 @@ void platform_initSerialPort(void *init);
 uint32_t platform_getSwitchState(void);
 void DebugPutString(char *s);
 void DebugPutString1(char *s, uint32_t n);
-
+void platform_redLedFlashOn(void);
+void platform_redLedFlashOff(void);
+void platform_redLedOn(void);
+void platform_redLedOff(void);
+void platform_blueLedOn(void);
+void platform_blueLedOff(void);
+void platform_greenLedOn(void);
+void platform_greenLedOff(void);
 #endif  /* __COMMON_H */

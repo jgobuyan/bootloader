@@ -40,7 +40,8 @@
 
 #define AHB_EN_MASK     (RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN |          \
                          RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIODEN |          \
-                         RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN)
+                         RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN |          \
+                         RCC_AHBENR_CRCEN)
 /* On-board LED Mapping */
 #define LED1_BASE (GPIO_TypeDef *)GPIOA_BASE
 #define LED1_PIN  (1<<GPIOA_LED_1)
@@ -148,23 +149,20 @@ void boardInit(void)
 void platform_init(void)
 {
     /*------------------- Resources Initialization -----------------------------*/
-    /* Enable GPIO clocks */
-    RCC_AHBPeriphClockCmd(
-            RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC
-                    | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOE
-                    | RCC_AHBPeriph_GPIOF, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
     boardInit();
     /* Set I2C2 Clock Source to SYSCLK */
     /* Note : I2C_TIMING depends on the I2C2 Clock source */
     RCC_I2CCLKConfig(RCC_I2C2CLK_SYSCLK);
-#if 0
+#if 1
     TIM_TimeBaseStructInit(&TIM2Config);
     TIM2Config.TIM_Prescaler = 7199;	/* 100 KHz timebase */
-    TIM2Config.TIM_Period = 100;
+    TIM2Config.TIM_Period = 1000;
+    TIM2Config.TIM_CounterMode = TIM_CounterMode_Down;
     TIM_DeInit(TIM2);
     TIM_TimeBaseInit(TIM2, &TIM2Config);
+    TIM_ARRPreloadConfig(TIM2, ENABLE);
 #endif
 }
 
@@ -195,10 +193,84 @@ uint32_t platform_getSwitchState(void)
 		}
 		timeout--;
 	}
-	GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
-	GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
+	//GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
+	//GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
+    TIM_ITConfig(TIM2,TIM_IT_Update, ENABLE);
+    TIM_Cmd(TIM2, ENABLE);
+    NVIC_EnableIRQ(TIM2_IRQn);
+    platform_redLedFlashOn();
 	return 0;
 }
+
+static uint8_t flashLed = 0;
+static uint8_t flashLedStatus = 0;
+/**
+ * flash red LED on
+ */
+void platform_redLedFlashOn(void)
+{
+    flashLed |= 1;
+}
+
+/**
+ * flash red LED off
+ */
+void platform_redLedFlashOff(void)
+{
+    flashLed &= ~1;
+}
+
+/**
+ * Turn red LED on
+ */
+void platform_redLedOn(void)
+{
+    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
+
+}
+
+/**
+ * Turn red LED off
+ */
+void platform_redLedOff(void)
+{
+    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
+}
+
+/**
+ * Turn blue LED on
+ */
+void platform_blueLedOn(void)
+{
+    GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
+
+}
+
+/**
+ * Turn blue LED off
+ */
+void platform_blueLedOff(void)
+{
+    GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
+}
+
+/**
+ * Turn green LED on
+ */
+void platform_greenLedOn(void)
+{
+    GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_RESET);
+
+}
+
+/**
+ * Turn green LED off
+ */
+void platform_greenLedOff(void)
+{
+    GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_SET);
+}
+
 
 /**
  * Initialize serial port
@@ -246,4 +318,38 @@ void platform_rs485Kludge(uint8_t state)
 	{
 		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_SET);
 	}
+}
+
+/**
+ * Timer 2 interrupt handler
+ */
+void TIM2_IRQHandler(void)
+{
+    static int count = 0;
+    if (flashLed & 1)
+    {
+        if (count == 0)
+        {
+            count = 3;
+            if (flashLedStatus & 1)
+            {
+                platform_redLedOff();
+                flashLedStatus &= ~1;
+            }
+            else
+            {
+                platform_redLedOn();
+                flashLedStatus |= 1;
+            }
+        }
+        else
+        {
+            count--;
+        }
+    }
+    else
+    {
+        platform_redLedOff();
+    }
+    TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 }

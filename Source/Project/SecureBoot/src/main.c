@@ -33,7 +33,7 @@
 #include "bootloader.h"
 #include "flashmap.h"
 #include "fwHeader.h"
-
+#include "stm32f37x.h"
 /**
  * @addtogroup SecureBoot
  * @{
@@ -112,13 +112,13 @@ int main(void)
     {
         /* If Key is pressed, execute the IAP driver in order to re-program the Flash */
         SecureBoot_Init();
+        platform_redLedFlashOn();
         DEBUG_PUTSTRING("Bootloader Mode");
         DEBUG_PUTSTRING("Start");
 
         /* Launch Modbus */
         ( void ) eMBInit(MB_RTU, 0x01, 0, 115200, MB_PAR_EVEN);
         mbBootInit();
-
         ( void ) eMBEnable(  );
 
     }

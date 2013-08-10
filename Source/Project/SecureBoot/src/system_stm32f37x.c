@@ -358,6 +358,41 @@ static void SetSysClock(void)
   else
   { /* If HSE fails to start-up, the application will have wrong clock 
     configuration. User can add here some code to deal with this error */
+      /* GENIST: Use HSI */
+      /* Enable Prefetch Buffer and set Flash Latency */
+      FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY_1;
+
+      /* HCLK = SYSCLK */
+      RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
+
+      /* PCLK2 = HCLK */
+      RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE2_DIV1;
+
+      /* PCLK1 = HCLK */
+      RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV2;
+
+
+      /*  PLL configuration: PLLCLK = HSE * 9 = 72 MHz */
+      RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE |
+                                          RCC_CFGR_PLLMULL));
+      RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLMULL9);
+
+      /* Enable PLL */
+      RCC->CR |= RCC_CR_PLLON;
+
+      /* Wait till PLL is ready */
+      while((RCC->CR & RCC_CR_PLLRDY) == 0)
+      {
+      }
+
+      /* Select PLL as system clock source */
+      RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+      RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
+
+      /* Wait till PLL is used as system clock source */
+      while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_PLL)
+      {
+      }
   }
 }
 
