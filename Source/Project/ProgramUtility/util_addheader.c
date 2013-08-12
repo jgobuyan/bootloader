@@ -53,7 +53,7 @@ int util_addheader(char *infile, char *outfile, char *version,
     fstat(fdin, &sb);
 
     /* Open output image file */
-    fdout = open(outfile, O_RDWR | O_CREAT, sb.st_mode);
+    fdout = open(outfile, O_RDWR | O_CREAT | O_TRUNC, sb.st_mode);
     if (fdout == -1)
     {
         perror("Could not open output");
