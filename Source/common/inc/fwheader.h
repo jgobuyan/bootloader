@@ -11,7 +11,9 @@
 
 #define VERSION_STRING_LENGTH   32
 #define SIGNATURE_LENGTH        446
-#define FW_MAGIC                0x494e4547  /* "GENI" in little endian */
+#define FW_MAGIC                0x494e4547  /**< "GENI" in little endian */
+#define FACTORY_LOCKED          0x00000000  /**< Factory Bank locked     */
+#define FACTORY_UNLOCKED        0x55555555  /**< Factory Bank unlocked   */
 
 /* ----------------------- Type definitions ---------------------------------*/
 typedef struct {
@@ -32,9 +34,11 @@ typedef struct {
 
 /* Bank ID Definitions */
 #define BANK_BOOT       0
+#define BANK_KEY        0
 #define BANK_A          1
 #define BANK_B          2
 #define BANK_F          3
+#define BANK_INVALID    255
 
 fwHeader *getImageHeader(UCHAR ucBank);
 

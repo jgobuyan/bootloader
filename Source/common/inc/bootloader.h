@@ -15,7 +15,7 @@
 #define MB_FUNC_BOOT_UPLOADBLOCK        ( 102 )
 #define MB_FUNC_BOOT_VALIDATEIMAGE      ( 103 )
 #define MB_FUNC_BOOT_SETKEYS            ( 104 )
-#define MB_FUNC_BOOT_LOCKKEYS           ( 105 )
+#define MB_FUNC_BOOT_LOCK               ( 105 )
 
 #define VERSION_STRING_LENGTH   32
 #define SIGNATURE_LENGTH        446

@@ -43,22 +43,34 @@ UCHAR cmd_setkeys(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen)
 }
 
 /**
- * Send Lock Keys request
+ * Send Lock File request
  *
  * @param ucMBaddr
+ * @param ucBank - BANK_BOOT to lock keys, BANK_F to lock factory bank
  * @return
  */
-UCHAR cmd_lockkeys(UCHAR ucMBaddr)
+UCHAR cmd_lockfile(UCHAR ucMBaddr, UCHAR ucBank)
 {
     UCHAR    buf[8];
     cmdFrameHeader *pFrame = (cmdFrameHeader *)buf;
-    DEBUG_PUTSTRING("LOCK_KEYS");
+    if (ucBank == BANK_BOOT)
+    {
+        DEBUG_PUTSTRING("LOCK KEYS");
+    }
+    else if (ucBank == BANK_F)
+    {
+        DEBUG_PUTSTRING("LOCK FACTORY BANK");
+    }
+    else
+    {
+        DEBUG_PUTSTRING1("LOCK UNKNOWN BANK ", ucBank);
+    }
     pFrame->mbAddr = ucMBaddr;
-    pFrame->cmdId = MB_FUNC_BOOT_LOCKKEYS;
-    pFrame->subcmdId = 0;
+    pFrame->cmdId = MB_FUNC_BOOT_LOCK;
+    pFrame->subcmdId = ucBank;
     pFrame->status = 0;
     cmd_start();
-    eMBSendFrame(buf, MB_FUNC_BOOT_VALIDATEIMAGE_SIZE + 1);
+    eMBSendFrame(buf, MB_FUNC_BOOT_LOCKKEYS_SIZE + 1);
     return cmd_status_wait();
 }
 
@@ -87,23 +99,18 @@ cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength )
 }
 
 /**
- * Lock Keys response callback.
+ * Lock File response callback.
  * @param pucFrame - pointer to response frame
  * @param pusLength - response frame length
  * @return
  */
 eMBException
-cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength )
+cmd_lockfile_callback( UCHAR * pucFrame, USHORT * pusLength )
 {
     cmdFrameHeader *pFrame = (cmdFrameHeader *)(pucFrame - 1);
-    switch (pFrame->status)
+    if (pFrame->status != BOOT_OK)
     {
-    case BOOT_OK:
-        printf ("Lock Keys OK\n");
-        break;
-    default:
-        printf ("Lock Keys failed: %d\n", pFrame->status);
-        break;
+        printf ("Lock File failed: %s\n", cmd_errorString(pFrame->status));
     }
     cmd_done(pFrame->status);
     return MB_EX_NONE;

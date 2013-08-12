@@ -3,6 +3,7 @@
 /**
  * Platform functions
  */
+#include <stdint.h>
 #define DEBUG_PUTSTRING(s)
 #define DEBUG_PUTSTRING1(s, n)
 void platform_init(void);

@@ -14,6 +14,33 @@ static BOOL     xCmd_in_progress = 0;
 static UCHAR    ucCmd_status;
 
 /**
+ * Status to string conversion
+ */
+typedef struct
+{
+        UCHAR status;
+        char *string;
+} errorString_t;
+
+const errorString_t STATUS[] =
+{
+        {BOOT_OK,           "OK"},
+        {BOOT_BANKEMPTY,    "Bank Empty"},
+        {BOOT_BADHCRC,      "Bad Header CRC"},
+        {BOOT_BADDCRC,      "Bad Data CRC"},
+        {BOOT_BADBLKNUM,    "Bad Block Number"},
+        {BOOT_BADSIG,       "Bad Signature"},
+        {BOOT_ERROR,        "Generic Error"},
+        {BOOT_UNVALIDATED,  "Unvalidated File"},
+        {BOOT_LOCKED,       "File Already Locked"},
+        {BOOT_EXIT,         "Exit"},
+        {BOOT_TIMEOUT,      "Timeout"},
+        {BOOT_INVALID,      "Invalid"},
+        {0,                 0}
+};
+
+
+/**
  * This function is called when a command is sent. It sets the initial command
  * status to BOOT_INVALID and set the command-in-progress flag.
  */
@@ -77,6 +104,24 @@ BOOL cmd_illegalfunc_callback(void )
     return TRUE;
 }
 
+/**
+ * Get a string description of the status
+ * @param status
+ * @return pointer to string constant
+ */
+const char *cmd_errorString(UCHAR status)
+{
+    UCHAR i = 0;
+    while (STATUS[i].string != 0)
+    {
+        if (STATUS[i].status == status)
+        {
+            return STATUS[i].string;
+        }
+        i++;
+    }
+    return "Unknown Error";
+}
 /**
  * @}
  */

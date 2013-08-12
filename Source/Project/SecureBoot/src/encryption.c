@@ -1,9 +1,13 @@
 /**
  * encryption.c
  *
+ * Blowfish encryption/RSA signing routines
  *  Created on: 2013-04-10
  *      Author: jeromeg
+ * @addtogroup Encryption
+ * @{
  */
+
 #include <string.h>
 #include "port.h"
 #include "fwheader.h"
@@ -18,8 +22,11 @@ static BLOWFISH_context context;
 static const KeyRing *keyring = (const KeyRing *)FLASH_KEY_BASE;
 extern void *ax_malloc(int size);
 extern void ax_free(void *addr);
+
 /**
  * Decrypt uploaded block using Blowfish.
+ * If key is not programmed, do not decrypt.
+ *
  * @param pData - pointer to buffered data
  * @param size - size of block
  */
@@ -48,7 +55,7 @@ void block_decrypt(void *pData, uint32_t size)
  */
 BOOL validate_signature (fwHeader *pHdr )
 {
-    ULONG len;
+    LONG len;
     RSA_CTX *rsa_context = 0;
     MD5_CTX md5_context;
     sigFile *pSig;
@@ -74,7 +81,13 @@ BOOL validate_signature (fwHeader *pHdr )
     MD5_Final(&md5_digest[0], &md5_context);
 
     /* Compare header info */
-    if (memcmp(&pSig->info, &pHdr->info, sizeof(fwInfo)))
+    if (len < 0)
+    {
+        DEBUG_PUTSTRING("Decryption Error");
+        ret = TRUE;
+    }
+    else if (memcmp(&pSig->info, &pHdr->info, sizeof(fwInfo)))
+
     {
         DEBUG_PUTSTRING("Header Mismatch");
         ret = TRUE;
@@ -94,3 +107,7 @@ BOOL validate_signature (fwHeader *pHdr )
     DEBUG_PUTSTRING("VALIDATE COMPLETE");
     return ret;
 }
+
+/**
+ * @}
+ */

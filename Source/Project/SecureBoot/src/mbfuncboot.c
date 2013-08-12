@@ -159,9 +159,12 @@ eMBException eMBFuncBootGetHeader(UCHAR * pucFrame, USHORT * usLen)
  * Prepare Flash partition.
  * The bank can be specified explicitly or the bootloader can choose the
  * least recently used bank.
- * @param pucFrame
- * @param usLen
- * @return
+ *
+ * If the factory bank is selected, the lock status is checked.
+ *
+ * @param pucFrame - ModBus frame
+ * @param usLen - ModBus frame length
+ * @return status
  */
 eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
 {
@@ -172,7 +175,14 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
     ucBank = pucFrame[MB_PDU_FUNC_BOOT_BANK_OFF];
     if ((*usLen == MB_FUNC_BOOT_PREPAREFLASH_SIZE) || (ucBank > BANK_B))
     {
-        if ((ucBank == BANK_A) || (ucBank == BANK_B))
+        if (ucBank == BANK_F)
+        {
+            /* Program Factory Bank. Initial state is unlocked. */
+            ucCurrentBank = ucBank;
+            ulCurrentSeqNum = FACTORY_UNLOCKED;
+
+        }
+        else if ((ucBank == BANK_A) || (ucBank == BANK_B))
         {
             /* Single Bank Mode. Always use specified Bank */
             ucCurrentBank = ucBank;
@@ -261,16 +271,30 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
                 }
             }
         }
-        pHdrA = (fwHeader *)Bank[ucCurrentBank].addr;
-
         /*
-         *
+         * Fill in common parameters
          */
-        FLASH_If_Erase((uint32_t)Bank[ucCurrentBank].addr, Bank[ucCurrentBank].size);
+        pHdrA = (fwHeader *)Bank[ucCurrentBank].addr;
         *usLen = MB_FUNC_BOOT_PREPAREFLASH_SIZE;
         pucFrame[MB_PDU_FUNC_BOOT_BANK_OFF] = ucCurrentBank;
-        pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
 
+        /*
+         * Check if factory load and check if locked
+         */
+        if ((ucCurrentBank == BANK_F) && (pHdrA->seqNum == FACTORY_LOCKED))
+        {
+            /* Don't erase if Bank F selected and is locked */
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_LOCKED;
+            ucCurrentBank = BANK_INVALID;
+        }
+        else
+        {
+            /* Erase if Bank A or B selected or if Bank F is select and not locked */
+            FLASH_Unlock();
+            FLASH_If_Erase((uint32_t)Bank[ucCurrentBank].addr, Bank[ucCurrentBank].size);
+            FLASH_Lock();
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
+        }
     }
     else
     {
@@ -280,20 +304,23 @@ eMBException eMBFuncBootPrepareFlash(UCHAR * pucFrame, USHORT * usLen)
 }
 
 /**
- * Receive an encrypted block. Decrypt and write it into Flash.
- * @param pucFrame
- * @param usLen
- * @return
+ * Receive an encrypted block. Decrypt and write it into Flash. The current bank
+ * is selected previously in eMBFuncBootPrepareFlash().
+ * @param pucFrame - ModBus frame
+ * @param usLen - ModBus frame length
+ * @return status
  */
 eMBException eMBFuncBootUploadBlock(UCHAR * pucFrame, USHORT * usLen)
 {
     eMBException eStatus = MB_EX_NONE;
     UCHAR ucBlockNum;
     ULONG ulFlashAddress;
+    ULONG status;
     if (*usLen == MB_FUNC_BOOT_UPLOADBLOCK_REQ_SIZE)
     {
+        FLASH_Unlock();
         ucBlockNum = pucFrame[MB_PDU_FUNC_BOOT_BLOCKNUM_OFF];
-        if ((ucCurrentBank != BANK_A) && (ucCurrentBank != BANK_B))
+        if ((ucCurrentBank != BANK_A) && (ucCurrentBank != BANK_B) && (ucCurrentBank != BANK_F))
         {
             pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_INVALID;
         }
@@ -310,15 +337,22 @@ eMBException eMBFuncBootUploadBlock(UCHAR * pucFrame, USHORT * usLen)
             }
             ulFlashAddress = (ULONG) Bank[ucCurrentBank].addr
                     + ucBlockNum * UPLOAD_BLOCK_SIZE;
-            if (!FLASH_If_Write(&ulFlashAddress,
+            if (!(status = FLASH_If_Write(&ulFlashAddress,
                     (uint32_t *)&pucFrame[MB_PDU_FUNC_BOOT_BLOCKDATA_OFF],
-                    UPLOAD_BLOCK_SIZE / 4))
+                    UPLOAD_BLOCK_SIZE / 4)))
             {
                 pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
             }
             else
             {
-                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
+                if (status == 1)
+                {
+                    pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
+                }
+                else
+                {
+                    pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_LOCKED;
+                }
             }
         }
         else
@@ -326,6 +360,7 @@ eMBException eMBFuncBootUploadBlock(UCHAR * pucFrame, USHORT * usLen)
             /* block number is out of range */
             pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BADBLKNUM;
         }
+        FLASH_Lock();
     }
     else
     {
@@ -350,7 +385,7 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
     if (*usLen == MB_FUNC_BOOT_VALIDATEIMAGE_SIZE)
 
     {
-        if ((ucCurrentBank != BANK_A) && (ucCurrentBank != BANK_B))
+        if ((ucCurrentBank != BANK_A) && (ucCurrentBank != BANK_B) && (ucCurrentBank != BANK_F))
         {
             pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_INVALID;
         }
@@ -371,7 +406,9 @@ eMBException eMBFuncBootValidateImage(UCHAR * pucFrame, USHORT * usLen)
                     DEBUG_PUTSTRING("Image OK");
                     pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
                     /* Write sequence number to validate */
+                    FLASH_Unlock();
                     FLASH_If_Write(&ulAddr, &ulCurrentSeqNum, 1);
+                    FLASH_Lock();
                 }
             }
         }
@@ -417,6 +454,7 @@ eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
             }
 
             /* Write keys to Flash */
+            FLASH_Unlock();
             if (!FLASH_If_Write(&ulFlashAddress,
                     (uint32_t *)&pucFrame[MB_PDU_FUNC_BOOT_BLOCKDATA_OFF],
                     UPLOAD_BLOCK_SIZE / 4))
@@ -427,6 +465,7 @@ eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
             {
                 pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
             }
+            FLASH_Lock();
         }
         else
         {
@@ -443,42 +482,94 @@ eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
 }
 
 /**
- * Lock keys in Flash. Write the magic number into the first location.
+ * Lock keys or factory bank in Flash.
+ *
+ * For keys, the magic number is written into the first location.
+ *
+ * For the factory bank, the FACTORY_LOCKED value is written into the
+ * sequence number.
  * @param pucFrame
  * @param usLen
  * @return
  */
-eMBException eMBFuncBootLockKeys(UCHAR * pucFrame, USHORT * usLen)
+eMBException eMBFuncBootLock(UCHAR * pucFrame, USHORT * usLen)
 {
+    UCHAR ucBank;
     eMBException eStatus = MB_EX_NONE;
-    ULONG ulAddr = (ULONG)FLASH_KEY_BASE;
-    ULONG *pAddr = (ULONG *)FLASH_KEY_BASE;
+    ULONG ulAddr;
+    ULONG *pAddr;
     ULONG i;
     ULONG empty = TRUE;
-    ULONG magic = FW_MAGIC;
+    ULONG ulValue;
+    ucBank = pucFrame[MB_PDU_FUNC_BOOT_BANK_OFF];
+
     if (*usLen == MB_FUNC_BOOT_LOCKKEYS_SIZE)
 
     {
-        /* Check if Flash key ring is empty. */
-        i = 0;
-        while ((pAddr[i] == FLASH_EMPTY) && (i < KEYARRAY_SIZE / sizeof(ULONG)))
+        if (ucBank == BANK_BOOT)
         {
-            i++;
-            if (pAddr[i] != FLASH_EMPTY)
+            ulAddr = (ULONG)FLASH_KEY_BASE;
+            pAddr = (ULONG *)FLASH_KEY_BASE;
+            ulValue = FW_MAGIC;
+            /* Requesting to lock keys
+             * Check if Flash key ring is empty.
+             */
+            i = 0;
+            while ((pAddr[i] == FLASH_EMPTY)
+                    && (i < KEYARRAY_SIZE / sizeof(ULONG)))
             {
-                empty = FALSE;
+                i++;
+                if (pAddr[i] != FLASH_EMPTY)
+                {
+                    empty = FALSE;
+                }
+            }
+            if (empty)
+            {
+                /* Don't lock if key ring is empty */
+                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_BANKEMPTY;
+            }
+            else
+            {
+                pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
+                /* Write magic number to lock */
+                FLASH_If_Write(&ulAddr, &ulValue, 1);
             }
         }
-        if (empty)
+        else if (ucBank == BANK_F)
         {
-            /* Don't lock if key ring is empty */
-            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_ERROR;
+            /*
+             * Requesting to lock factory bank
+             */
+            fwHeader *pHdr = (fwHeader *)Bank[BANK_F].addr;
+            ulAddr = (ULONG)&pHdr->seqNum;
+            pAddr = &pHdr->seqNum;
+            ulValue = FACTORY_LOCKED;
+
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = ucCheckImage(pHdr);
+            if (pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] == BOOT_OK)
+            {
+                /* Factory bank is valid. Check if it is already locked. */
+                if (pHdr->seqNum != FACTORY_LOCKED)
+                {
+                    /* Write sequence number to lock */
+                    FLASH_Unlock();
+                    FLASH_If_Write(&ulAddr, &ulValue, 1);
+                    FLASH_Lock();
+                }
+                else
+                {
+                    /* Already locked */
+                    pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_LOCKED;
+                }
+            }
+            /*
+             * If bank is invalid, the return code will indicate the error.
+             */
         }
         else
         {
-            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_OK;
-            /* Write magic number to validate */
-            FLASH_If_Write(&ulAddr, &magic, 1);
+            pucFrame[MB_PDU_FUNC_BOOT_CTRLSTATUS_OFF] = BOOT_INVALID;
         }
 
     }
@@ -518,7 +609,7 @@ void mbBootInit(void)
     eMBRegisterCB( MB_FUNC_BOOT_UPLOADBLOCK, eMBFuncBootUploadBlock);
     eMBRegisterCB( MB_FUNC_BOOT_VALIDATEIMAGE, eMBFuncBootValidateImage);
     eMBRegisterCB( MB_FUNC_BOOT_SETKEYS, eMBFuncBootSetKeys);
-    eMBRegisterCB( MB_FUNC_BOOT_LOCKKEYS, eMBFuncBootLockKeys);
+    eMBRegisterCB( MB_FUNC_BOOT_LOCK, eMBFuncBootLock);
     ucCurrentBank = BANK_BOOT;
 }
 

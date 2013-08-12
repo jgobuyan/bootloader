@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file    SecureBoot/src/main.c
+ * @file    main.c
  * @author  MCD Application Team
  * @version V1.0.0
  * @date    02-October-2012
@@ -40,14 +40,9 @@
  */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef  void (*pFunction)(void);
-
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-pFunction Jump_To_Application;
-uint32_t JumpAddress;
-
 /* Private function prototypes -----------------------------------------------*/
 static void SecureBoot_Init(void);
 
@@ -56,6 +51,8 @@ extern void malloc_init(void);
 
 /**
  * @brief  Main program.
+ *
+ * This is the entry point of the SecureBoot code.
  * @param  None
  * @retval None
  */
@@ -131,14 +128,9 @@ int main(void)
                 == 0x20000000)
         {
             /* Jump to user application */
-            int32_t *pVectorTable = (uint32_t *) &pHdr[1];
-            //JumpAddress = pVectorTable[1];
-            //Jump_To_Application = (pFunction) JumpAddress;
-            /* Initialize user application's Stack Pointer */
-            //__set_MSP(*(__IO uint32_t *) &pVectorTable[0]);
+            uint32_t *pVectorTable = (uint32_t *) &pHdr[1];
             NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)pVectorTable & ~FLASH_BOOT_BASE);
-            /* Jump to application */
-            //Jump_To_Application();
+            /* Jump to application on return */
             return (int)pVectorTable;
         }
     }

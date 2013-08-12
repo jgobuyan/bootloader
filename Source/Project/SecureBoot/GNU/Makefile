@@ -320,6 +320,6 @@ $(LIBCCAN):
 build_version.c: FORCE
 	@echo "#include \"bootloader.h\"" > build_version.c
 	@echo "#include \"fwheader.h\"" > build_version.c
-	@echo "fwInfo __fwinfo = { .magic = FW_MAGIC, .version = \"Bootloader `date +%Y-%b-%d`\" };" >> build_version.c
+	@echo "fwInfo __fwinfo = { .magic = FW_MAGIC, .version = \"SecureBoot `date +%Y%b%d` `git log -1 --abbrev-commit | grep ^commit | cut -d' ' -f2`\" };" >> build_version.c
 
 FORCE:

@@ -360,6 +360,7 @@ static void SetSysClock(void)
     configuration. User can add here some code to deal with this error */
       /* GENIST: Use HSI */
       /* Enable Prefetch Buffer and set Flash Latency */
+#if 1
       FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY_1;
 
       /* HCLK = SYSCLK */
@@ -372,10 +373,10 @@ static void SetSysClock(void)
       RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV2;
 
 
-      /*  PLL configuration: PLLCLK = HSE * 9 = 72 MHz */
+      /*  PLL configuration: PLLCLK = HSI/2 * 16 = 64 MHz */
       RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE |
                                           RCC_CFGR_PLLMULL));
-      RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLMULL9);
+      RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLMULL16);
 
       /* Enable PLL */
       RCC->CR |= RCC_CR_PLLON;
@@ -393,6 +394,7 @@ static void SetSysClock(void)
       while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_PLL)
       {
       }
+#endif
   }
 }
 

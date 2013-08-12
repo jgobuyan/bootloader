@@ -72,10 +72,11 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
         /* Do whole blocks first to avoid going over the end of mmap */
         while (index < len)
         {
+            UCHAR status;
             DEBUG_PUTSTRING1("Block ", index);
             retry = NUM_UPLOAD_RETRIES;
-            while (cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
-                    &pInfile[index], UPLOAD_BLOCK_SIZE) != BOOT_OK)
+            while ((status = cmd_uploadblock(ucMBaddr, index / UPLOAD_BLOCK_SIZE,
+                    &pInfile[index], UPLOAD_BLOCK_SIZE)) != BOOT_OK)
             {
                 if ((--retry) == 0)
                 {
@@ -84,7 +85,7 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
                     ret = TRUE;
                     break;
                 }
-                printf("R");
+                printf("%s\n", cmd_errorString(status));
                 fflush(stdout);
             }
             if (ret)
@@ -134,7 +135,6 @@ int util_upload(UCHAR ucMBaddr, char *infile, UCHAR ucBank)
     }
     else
     {
-        perror("Failed preparing Flash");
         ret = TRUE;
     }
     munmap(pInfile, sb.st_size);

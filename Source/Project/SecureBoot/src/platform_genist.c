@@ -31,8 +31,12 @@
  * files to make this code compile using STMicro headers.
  */
 
+/**
+ * @addtogroup SecureBoot
+ * @{
+ */
 /* Includes ------------------------------------------------------------------*/
-#include "platform_genist.h"
+#include "platform.h"
 #include "stm32f37x.h"
 #include "debug.h"
 #include "board.h"
@@ -54,6 +58,7 @@
 /* RS485 Kludge */
 #define RS485RE_BASE	(GPIO_TypeDef *)GPIOD_BASE
 #define RS485RE_PIN (1<<GPIOD_RS485_RE)
+
 /**
  * @brief   GPIO port setup info.
  */
@@ -144,18 +149,15 @@ void boardInit(void)
 }
 
 /**
- * Initialize platform
+ * Initialize platform.
  */
 void platform_init(void)
 {
     /*------------------- Resources Initialization -----------------------------*/
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
     boardInit();
-    /* Set I2C2 Clock Source to SYSCLK */
-    /* Note : I2C_TIMING depends on the I2C2 Clock source */
-    RCC_I2CCLKConfig(RCC_I2C2CLK_SYSCLK);
-#if 1
+    /* Set up Timer 2 for LED blinking */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
     TIM_TimeBaseStructInit(&TIM2Config);
     TIM2Config.TIM_Prescaler = 7199;	/* 100 KHz timebase */
     TIM2Config.TIM_Period = 1000;
@@ -163,7 +165,6 @@ void platform_init(void)
     TIM_DeInit(TIM2);
     TIM_TimeBaseInit(TIM2, &TIM2Config);
     TIM_ARRPreloadConfig(TIM2, ENABLE);
-#endif
 }
 
 /**
@@ -177,7 +178,7 @@ void platform_init(void)
 uint32_t platform_getSwitchState(void)
 {
 	uint8_t pinState;
-	uint32_t timeout = 2000000;
+	uint32_t timeout = 20000000;
 	/* Sample Hazard 2 input. If it is ever detected low, then exit. */
 	GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
 	GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
@@ -204,6 +205,7 @@ uint32_t platform_getSwitchState(void)
 
 static uint8_t flashLed = 0;
 static uint8_t flashLedStatus = 0;
+
 /**
  * flash red LED on
  */
@@ -308,6 +310,10 @@ void DebugPutString1(char *s, uint32_t n)
 	(void) n;
 }
 
+/**
+ * Kludge the RS485 RE signal for Genist V3 board to mirror the DE signal.
+ * @param state
+ */
 void platform_rs485Kludge(uint8_t state)
 {
 	if (state)
@@ -321,7 +327,7 @@ void platform_rs485Kludge(uint8_t state)
 }
 
 /**
- * Timer 2 interrupt handler
+ * Timer 2 interrupt handler.
  */
 void TIM2_IRQHandler(void)
 {

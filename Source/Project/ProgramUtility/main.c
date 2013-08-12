@@ -53,7 +53,7 @@
 #define FLAG_ENCRYPT        0x00000010  /**< Encrypt image              */
 #define FLAG_SIGN           0x00000020  /**< Sign image                 */
 #define FLAG_CREATE_KEYFILE 0x00000040  /**< Create/Upload key file     */
-#define FLAG_LOCK_KEYFILE   0x00000080  /**< Lock key file              */
+#define FLAG_LOCK_FILE      0x00000080  /**< Lock key file/factor bank  */
 #define FLAG_VALIDATE       0x80000000  /**< Validate signature (debug) */
 
 /* ----------------------- Static variables ---------------------------------*/
@@ -164,6 +164,8 @@ void print_usage(void)
            "    prog_util -e 01234567 -s rsa.der -k -p /dev/ttyS4\n\n"
            "Lock RSA and Blowfish keys over serial port\n"
            "    prog_util -l -p /dev/ttyS4\n\n"
+           "Lock factory bank over serial port\n"
+           "    prog_util -f -p /dev/ttyS4\n\n"
            "Upload image to least recent bank over serial port\n"
            "    prog_util -p /dev/ttyS4 -u file.img\n\n"
            "Upload image to Bank A over serial port\n"
@@ -203,7 +205,7 @@ main( int argc, char *argv[] )
     /*
      * Process command line options
      */
-    while ((c = getopt(argc, argv, "a:b:ce:klp:s:uvDV")) != -1)
+    while ((c = getopt(argc, argv, "a:b:ce:fklp:s:uvDV")) != -1)
     {
         switch (c)
         {
@@ -217,16 +219,22 @@ main( int argc, char *argv[] )
         case 'c':
             ulOptFlags |= FLAG_CHECK_HEADER;
             break;
+        case 'e':
+            ulOptFlags |= FLAG_ENCRYPT;
+            pBlowfishKeyString = optarg;
+            break;
+        case 'f':
+            ulOptFlags |= FLAG_LOCK_FILE;
+            ucBank = BANK_F;
+            ucStartThread = TRUE;
+            break;
         case 'k':
             ulOptFlags |= FLAG_CREATE_KEYFILE;
             break;
         case 'l':
-            ulOptFlags |= FLAG_LOCK_KEYFILE;
+            ulOptFlags |= FLAG_LOCK_FILE;
+            ucBank = BANK_BOOT;
             ucStartThread = TRUE;
-            break;
-        case 'e':
-            ulOptFlags |= FLAG_ENCRYPT;
-            pBlowfishKeyString = optarg;
             break;
         case 'p':
             ucPort = strtoul(optarg, &endptr, 0);
@@ -319,7 +327,7 @@ main( int argc, char *argv[] )
             (void)eMBRegisterCB(MB_FUNC_BOOT_UPLOADBLOCK, cmd_uploadblock_callback);
             (void)eMBRegisterCB(MB_FUNC_BOOT_VALIDATEIMAGE, cmd_validatesig_callback);
             (void)eMBRegisterCB(MB_FUNC_BOOT_SETKEYS, cmd_setkeys_callback);
-            (void)eMBRegisterCB(MB_FUNC_BOOT_LOCKKEYS, cmd_lockkeys_callback);
+            (void)eMBRegisterCB(MB_FUNC_BOOT_LOCK, cmd_lockfile_callback);
             (void)eMBRegisterIllegalFuncCB(cmd_illegalfunc_callback);
 
             (void)eMBRegisterTimeoutCB( cmd_timeout_callback );
@@ -349,9 +357,9 @@ main( int argc, char *argv[] )
             {
                 ucStatus = cmd_getheader(ucMBAddr, ucBank);
             }
-            if (ucStatus != BOOT_OK)
+            if ((ucStatus != BOOT_OK) && (ucStatus != BOOT_BANKEMPTY))
             {
-                fprintf(stderr, "Get Version Failed: %d", ucStatus);
+                fprintf(stderr, "Get Version Failed: %s", cmd_errorString(ucStatus));
             }
 
         }
@@ -381,18 +389,22 @@ main( int argc, char *argv[] )
         {
             util_createkeyfile(ucMBAddr, infile, pRSAKeyFile, pBlowfishKeyString);
         }
-        else if (ulOptFlags & FLAG_LOCK_KEYFILE)
+        else if (ulOptFlags & FLAG_LOCK_FILE)
         {
             timeout = 10;
-            ucStatus = cmd_lockkeys(ucMBAddr);
+            ucStatus = cmd_lockfile(ucMBAddr, ucBank);
             while ((ucStatus == BOOT_TIMEOUT)
                     && (--timeout))
             {
-                ucStatus = cmd_lockkeys(ucMBAddr);
+                ucStatus = cmd_lockfile(ucMBAddr, ucBank);
             }
             if (ucStatus != BOOT_OK)
             {
-                fprintf(stderr, "Lock Failed: %d", ucStatus);
+                fprintf(stderr, "Lock Failed: %s", cmd_errorString(ucStatus));
+            }
+            else
+            {
+                printf("Lock Successful\n");
             }
 
         }

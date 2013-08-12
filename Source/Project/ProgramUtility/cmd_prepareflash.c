@@ -50,10 +50,25 @@ cmd_prepareflash_callback( UCHAR * pucFrame, USHORT * pusLength )
     switch (pFrame->status)
     {
     case BOOT_OK:
-        printf ("Selected Bank: %d\n", pFrame->subcmdId);
+        printf ("Selected Bank: ");
+        switch(pFrame->subcmdId)
+        {
+        case 1:
+            printf("A\n");
+            break;
+        case 2:
+            printf("B\n");
+            break;
+        case 3:
+            printf("F\n");
+            break;
+        default:
+            printf("Unknown\n");
+            break;
+        }
         break;
     default:
-        printf ("PrepareFlash: Unknown response\n");
+        printf ("PrepareFlash: %s\n", cmd_errorString(pFrame->status));
         break;
     }
     cmd_done(pFrame->status);

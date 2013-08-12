@@ -19,7 +19,7 @@ UCHAR cmd_prepareflash(UCHAR ucMBAddr, UCHAR ucBank);
 UCHAR cmd_uploadblock(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
 UCHAR cmd_validatesig(UCHAR ucMBAddr);
 UCHAR cmd_setkeys(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen);
-UCHAR cmd_lockkeys(UCHAR ucMBAddr);
+UCHAR cmd_lockfile(UCHAR ucMBAddr, UCHAR ucBank);
 
 void cmd_start(void);
 void cmd_done(UCHAR status);
@@ -46,9 +46,10 @@ eMBException cmd_prepareflash_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_uploadblock_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_validatesig_callback( UCHAR * pucFrame, USHORT * pusLength );
 eMBException cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
-eMBException cmd_lockkeys_callback( UCHAR * pucFrame, USHORT * pusLength );
+eMBException cmd_lockfile_callback( UCHAR * pucFrame, USHORT * pusLength );
 BOOL cmd_timeout_callback(void);
 BOOL cmd_illegalfunc_callback(void);
+const char *cmd_errorString(UCHAR status);
 
 /**
  * @}
