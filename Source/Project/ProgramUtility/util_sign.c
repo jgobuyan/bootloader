@@ -45,9 +45,8 @@ static sigFile sig;
 /**
  * Get RSA key info from the private DER file. The public elements are saved
  * into the Key Ring buffer.
- * @param buf
- * @param len
- * @return
+ * @param buf - pointer to DER file contents
+ * @return - 0 if successful
  */
 int get_key(const uint8_t *buf)
 {
@@ -159,7 +158,7 @@ int util_createkeyfile(UCHAR ucMBaddr, char *outfile, char *rsa_keyfile, char *b
     }
     else
     {
-        int index;
+        int index = 0;
         int retry;
         /* Upload keyfile to board */
         printf("Uploading keys:\n");
