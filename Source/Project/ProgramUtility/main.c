@@ -14,13 +14,27 @@
  *
  * # Program Utility for the STM32 Secure Bootloader
  *
- * Usage: prog_util {options} {infile} {outfile}
- *
- * ## Options
- *
- * -a {version-string}
- * -b {bank-number}
- * -c                   Check image
+ @verbatim
+   Usage: prog_util {options} {infile} {outfile}
+
+   Options
+       -a <version-string>      Add header
+       -b <bank-number>         Bank number
+           0 = Bootloader
+           1 = Bank A
+           2 = Bank B
+           3 = Bank F
+       -c                       Check image
+       -e <key>                 Blowfish key
+       -f                       Lock factory load
+       -k                       Create/upload binary key file
+       -l                       Lock keys
+       -p <port>                Serial port number or full name
+       -s <rsa-file>            RSA signing key file (DER format)
+       -u                       Upload and program flash
+       -v                       Query version
+       -D                       Display debug
+ @endverbatim
  */
 
 /**
@@ -146,6 +160,7 @@ void print_usage(void)
            "                                          3 = Bank F\n");
     printf("-c                                      - check image\n");
     printf("-e <key>                                - Blowfish key\n");
+    printf("-f                                      - lock factory load\n");
     printf("-k                                      - create/upload binary key file\n");
     printf("-l                                      - lock keys\n");
     printf("-p <port>                               - Serial port number or full name\n");

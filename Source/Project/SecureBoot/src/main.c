@@ -60,7 +60,7 @@ int main(void)
 {
     fwHeader *pHdrA;
     fwHeader *pHdrB;
-    fwHeader *pHdr;
+    fwHeader *pHdr = 0;
 
     /*!< At this stage the microcontroller clock setting is already configured,
      this is done through SystemInit() function which is called from startup
@@ -105,7 +105,7 @@ int main(void)
     }
 
     /* If no valid loads or bootloader is invoked */
-    if (!pHdr || platform_getSwitchState() == 0x00)
+    if (!pHdr || platform_getSwitchState() == 0)
     {
         /* If Key is pressed, execute the IAP driver in order to re-program the Flash */
         SecureBoot_Init();
@@ -123,6 +123,7 @@ int main(void)
     /* Keep the user application running */
     else
     {
+        platform_deinit();
         /* Test if user code is programmed starting from address "APPLICATION_ADDRESS" */
         if (((*(__IO uint32_t*) &pHdr[1] ) & 0x2FFE0000)
                 == 0x20000000)

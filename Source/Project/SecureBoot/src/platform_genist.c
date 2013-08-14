@@ -153,8 +153,6 @@ void boardInit(void)
  */
 void platform_init(void)
 {
-    /*------------------- Resources Initialization -----------------------------*/
-
     boardInit();
     /* Set up Timer 2 for LED blinking */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
@@ -165,6 +163,26 @@ void platform_init(void)
     TIM_DeInit(TIM2);
     TIM_TimeBaseInit(TIM2, &TIM2Config);
     TIM_ARRPreloadConfig(TIM2, ENABLE);
+    TIM_ITConfig(TIM2,TIM_IT_Update, ENABLE);
+    TIM_Cmd(TIM2, ENABLE);
+    NVIC_EnableIRQ(TIM2_IRQn);
+}
+
+/**
+ * Deinitialize platform.
+ */
+void platform_deinit(void)
+{
+    NVIC_DisableIRQ(TIM2_IRQn);
+    TIM_DeInit(TIM2);
+    /* Revert to HSI as system clock source */
+    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+    RCC->CFGR |= (uint32_t)RCC_CFGR_SW_HSI;
+
+    /* Wait till HSI is used as system clock source */
+    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_HSI)
+    {
+    }
 }
 
 /**
@@ -194,12 +212,6 @@ uint32_t platform_getSwitchState(void)
 		}
 		timeout--;
 	}
-	//GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
-	//GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
-    TIM_ITConfig(TIM2,TIM_IT_Update, ENABLE);
-    TIM_Cmd(TIM2, ENABLE);
-    NVIC_EnableIRQ(TIM2_IRQn);
-    platform_redLedFlashOn();
 	return 0;
 }
 
