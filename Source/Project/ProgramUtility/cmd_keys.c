@@ -17,7 +17,18 @@
 #include "platform.h"
 /**
  * Send Set Keys request.
- * Binary key file is sent in two 1024 byte blocks.
+ * Binary key file is sent in two 1024 byte blocks. The following ModBus
+ * packet is sent to the board.
+ *
+ * <TABLE>
+ * <TR><TH>Byte</TH><TH>Description </TH><TH>Value      </TH></TR>
+ * <TR><TD>0</TD><TD>ModBusAddress  </TD><TD>0x01       </TD></TR>
+ * <TR><TD>1</TD><TD>FuncID         </TD><TD>0x68       </TD></TR>
+ * <TR><TD>2</TD><TD>Block Number   </TD><TD>0 or 1     </TD></TR>
+ * <TR><TD>3</TD><TD>Unused         </TD><TD>0x00       </TD></TR>
+ * <TR><TD>4</TD><TD>CRCL           </TD><TD>           </TD></TR>
+ * <TR><TD>5</TD><TD>CRCH           </TD><TD>           </TD></TR>
+ * </TABLE>
  *
  * @param ucMBaddr
  * @param ucBlock
@@ -43,7 +54,25 @@ UCHAR cmd_setkeys(UCHAR ucMBaddr, UCHAR ucBlock, UCHAR *pucData, USHORT usLen)
 }
 
 /**
- * Send Lock File request
+ * Send Lock File request. This function is used to lock either the
+ * decryption/signature keys or the factory bank.
+ *
+ * The locking of keys will fail if the key partition in Flash is erased (empty).
+ * The locking of the factory bank will fail if the bank  contains a corrupt load
+ * or is empty.
+ *
+ * The following ModBus packet is sent to the board.
+ *
+ * <TABLE>
+ * <TR><TH>Byte</TH><TH>Description </TH><TH>Value      </TH></TR>
+ * <TR><TD>0</TD><TD>ModBusAddress  </TD><TD>0x01       </TD></TR>
+ * <TR><TD>1</TD><TD>FuncID         </TD><TD>0x69       </TD></TR>
+ * <TR><TD>2</TD><TD>Block Number   </TD><TD>0 = Lock Keys<BR>
+ *                                           3 = Lock Bank F</TD></TR>
+ * <TR><TD>3</TD><TD>Unused         </TD><TD>0x00       </TD></TR>
+ * <TR><TD>4</TD><TD>CRCL           </TD><TD>           </TD></TR>
+ * <TR><TD>5</TD><TD>CRCH           </TD><TD>           </TD></TR>
+ * </TABLE>
  *
  * @param ucMBaddr
  * @param ucBank - BANK_BOOT to lock keys, BANK_F to lock factory bank
@@ -76,7 +105,18 @@ UCHAR cmd_lockfile(UCHAR ucMBaddr, UCHAR ucBank)
 
 /**
  * Set Keys response callback.
+ * The following ModBus packet is sent by the board.
  *
+ * <TABLE>
+ * <TR><TH>Byte</TH><TH>Description </TH><TH>Value      </TH></TR>
+ * <TR><TD>0</TD><TD>ModBusAddress  </TD><TD>0x01       </TD></TR>
+ * <TR><TD>1</TD><TD>FuncID         </TD><TD>0x68       </TD></TR>
+ * <TR><TD>2</TD><TD>Block Number   </TD><TD>0 or 1     </TD></TR>
+ * <TR><TD>3</TD><TD>Status         </TD><TD>   OK<BR>
+ *                                              BANKEMPTY<BR>
+ * <TR><TD>4</TD><TD>CRCL           </TD><TD>           </TD></TR>
+ * <TR><TD>5</TD><TD>CRCH           </TD><TD>           </TD></TR>
+ * </TABLE>
  * @param pucFrame - pointer to response frame
  * @param pusLength - response frame length
  * @return
@@ -100,6 +140,24 @@ cmd_setkeys_callback( UCHAR * pucFrame, USHORT * pusLength )
 
 /**
  * Lock File response callback.
+ *
+ * The following ModBus packet is sent by the board.
+ *
+ * <TABLE>
+ * <TR><TH>Byte</TH><TH>Description </TH><TH>Value      </TH></TR>
+ * <TR><TD>0</TD><TD>ModBusAddress  </TD><TD>0x01       </TD></TR>
+ * <TR><TD>1</TD><TD>FuncID         </TD><TD>0x69       </TD></TR>
+ * <TR><TD>2</TD><TD>Block Number   </TD><TD>0 = Lock Keys<BR>
+ *                                           3 = Lock Bank F</TD></TR>
+ * <TR><TD>3</TD><TD>Status         </TD><TD>   OK<BR>
+ *                                              BANKEMPTY<BR>
+ *                                              LOCKED<BR>
+ *                                              INVALID<BR>
+ *                                              BADHCRC<BR>
+ *                                              BADCCRC<BR>
+ * <TR><TD>4</TD><TD>CRCL           </TD><TD>           </TD></TR>
+ * <TR><TD>5</TD><TD>CRCH           </TD><TD>           </TD></TR>
+ * </TABLE>
  * @param pucFrame - pointer to response frame
  * @param pusLength - response frame length
  * @return

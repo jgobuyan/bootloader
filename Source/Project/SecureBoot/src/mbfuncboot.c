@@ -445,6 +445,7 @@ eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
         {
             ulFlashAddress = (ULONG) FLASH_KEY_BASE
                     + ucBlockNum * UPLOAD_BLOCK_SIZE;
+            FLASH_Unlock();
             if (ucBlockNum == 0)
             {
                 /* Ensure that the key lock field is in erased state */
@@ -454,7 +455,6 @@ eMBException eMBFuncBootSetKeys(UCHAR * pucFrame, USHORT * usLen)
             }
 
             /* Write keys to Flash */
-            FLASH_Unlock();
             if (!FLASH_If_Write(&ulFlashAddress,
                     (uint32_t *)&pucFrame[MB_PDU_FUNC_BOOT_BLOCKDATA_OFF],
                     UPLOAD_BLOCK_SIZE / 4))
