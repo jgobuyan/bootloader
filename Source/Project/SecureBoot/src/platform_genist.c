@@ -328,6 +328,7 @@ void DebugPutString1(char *s, uint32_t n)
  */
 void platform_rs485Kludge(uint8_t state)
 {
+	/*
 	if (state)
 	{
 		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_RESET);
@@ -336,6 +337,7 @@ void platform_rs485Kludge(uint8_t state)
 	{
 		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_SET);
 	}
+	*/
 }
 
 /**
