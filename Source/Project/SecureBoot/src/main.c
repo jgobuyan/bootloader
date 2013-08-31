@@ -32,7 +32,7 @@
 #include "platform.h"
 #include "bootloader.h"
 #include "flashmap.h"
-#include "fwHeader.h"
+#include "fwheader.h"
 #include "stm32f37x.h"
 /**
  * @addtogroup SecureBoot
