@@ -34,6 +34,25 @@
 #include "flashmap.h"
 #include "fwheader.h"
 #include "stm32f37x.h"
+#include "board.h"
+
+
+
+//#define GPIOA_LED_1      GPIOA_LED1_X
+//#define GPIOC_LED_2      GPIOA_LED2_X
+//#define GPIOC_LED_3      GPIOB_IN4   
+
+#define LED_STBY_BASE   (GPIO_TypeDef *)GPIOC_BASE
+#define LED_STBY_PIN    (1<<GPIOC_STBY)
+#define LED1_BASE (GPIO_TypeDef *)GPIOA_BASE
+#define LED1_PIN  (1<<GPIOA_LED_1)
+#define LED2_BASE (GPIO_TypeDef *)GPIOA_BASE
+#define LED2_PIN  (1<<GPIOC_LED_2)
+#define LED3_BASE (GPIO_TypeDef *)GPIOC_BASE
+#define LED3_PIN  (1<<GPIOC_LED_3)
+#define HAZ2_BASE (GPIO_TypeDef *)GPIOB_BASE
+#define HAZ2_PIN  (1<<GPIOB_HAZ_2)
+
 /**
  * @addtogroup SecureBoot
  * @{
@@ -61,6 +80,12 @@ int main(void)
     fwHeader *pHdrA;
     fwHeader *pHdrB;
     fwHeader *pHdr = 0;
+
+//    GPIO_WriteBit(LED_STBY_BASE, LED_STBY_PIN, Bit_SET);
+//    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
+//    GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
+//    GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_SET);
+
 
     /*!< At this stage the microcontroller clock setting is already configured,
      this is done through SystemInit() function which is called from startup

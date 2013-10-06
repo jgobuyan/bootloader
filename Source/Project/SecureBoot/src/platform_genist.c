@@ -46,6 +46,7 @@
                          RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIODEN |          \
                          RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN |          \
                          RCC_AHBENR_CRCEN)
+
 /* On-board LED Mapping */
 #define LED1_BASE (GPIO_TypeDef *)GPIOA_BASE
 #define LED1_PIN  (1<<GPIOA_LED_1)
@@ -55,6 +56,9 @@
 #define LED3_PIN  (1<<GPIOC_LED_3)
 #define HAZ2_BASE (GPIO_TypeDef *)GPIOB_BASE
 #define HAZ2_PIN  (1<<GPIOB_HAZ_2)
+//#define LED_STBY_BASE   (GPIO_TypeDef *)GPIOC_BASE
+//#define LED_STBY_PIN    (1<<GPIOC_STBY)
+
 /* RS485 Kludge */
 #define RS485RE_BASE	(GPIO_TypeDef *)GPIOD_BASE
 #define RS485RE_PIN (1<<GPIOD_RS485_RE)
@@ -239,6 +243,7 @@ void platform_redLedFlashOff(void)
  */
 void platform_redLedOn(void)
 {
+//    LED_ON;
     GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
 
 }
@@ -248,6 +253,7 @@ void platform_redLedOn(void)
  */
 void platform_redLedOff(void)
 {
+//    LED_OFF;
     GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
 }
 
@@ -256,6 +262,7 @@ void platform_redLedOff(void)
  */
 void platform_blueLedOn(void)
 {
+//    LED_ON;
     GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
 
 }
@@ -265,6 +272,7 @@ void platform_blueLedOn(void)
  */
 void platform_blueLedOff(void)
 {
+//    LED_OFF;
     GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
 }
 
@@ -273,6 +281,7 @@ void platform_blueLedOff(void)
  */
 void platform_greenLedOn(void)
 {
+//    LED_ON;
     GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_RESET);
 
 }
@@ -282,6 +291,7 @@ void platform_greenLedOn(void)
  */
 void platform_greenLedOff(void)
 {
+//    LED_OFF;
     GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_SET);
 }
 
