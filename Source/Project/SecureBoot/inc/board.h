@@ -192,7 +192,7 @@
  *
  * PA0  - PWM_OUT                   (alternate 8).
  * PA1  - LS_PWM_P                  (analog).
- * PA2  - EXT_9                     (output opendrain minimum).
+ * PA2  - EXT_9                     (output pushpull minimum).
  * PA3  - RF_NIRQ                   (input pullup).
  * PA4  - SPI1_NSS                  (output pushpull maximum).
  * PA5  - CUR_MON_IN                (analog).
@@ -225,7 +225,7 @@
                                      PIN_MODE_ALTERNATE(GPIOA_JTAG_TDI))
 #define VAL_GPIOA_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOA_PWM_OUT) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_LS_PWM_P) |   \
-                                     PIN_OTYPE_OPENDRAIN(GPIOA_EXT_9) |     \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_EXT_9) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_RF_NIRQ) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPI1_NSS) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOA_CUR_MON_IN) | \
@@ -257,7 +257,7 @@
                                      PIN_OSPEED_100M(GPIOA_JTAG_TDI))
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_FLOATING(GPIOA_PWM_OUT) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_LS_PWM_P) |   \
-                                     PIN_PUPDR_FLOATING(GPIOA_EXT_9) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_EXT_9) |      \
                                      PIN_PUPDR_PULLUP(GPIOA_RF_NIRQ) |      \
                                      PIN_PUPDR_FLOATING(GPIOA_SPI1_NSS) |   \
                                      PIN_PUPDR_FLOATING(GPIOA_CUR_MON_IN) | \
@@ -266,8 +266,8 @@
                                      PIN_PUPDR_PULLUP(GPIOA_EN) |           \
                                      PIN_PUPDR_FLOATING(GPIOA_I2C2_SCL) |   \
                                      PIN_PUPDR_FLOATING(GPIOA_I2C2_SDA) |   \
-                                     PIN_PUPDR_FLOATING(GPIOA_LED1_X) |     \
-                                     PIN_PUPDR_FLOATING(GPIOA_LED2_X) |     \
+                                     PIN_PUPDR_PULLUP(GPIOA_LED1_X) |       \
+                                     PIN_PUPDR_PULLUP(GPIOA_LED2_X) |       \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWDIO) |      \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWCLK) |      \
                                      PIN_PUPDR_FLOATING(GPIOA_JTAG_TDI))
@@ -425,15 +425,15 @@
  * GPIOC setup:
  *
  * PC0  - STBY                      (output opendrain minimum).
- * PC1  - EXT_10                    (output opendrain minimum).
- * PC2  - EXT_11                    (output opendrain minimum).
+ * PC1  - EXT_10                    (output pushdown minimum).
+ * PC2  - EXT_11                    (output pushdown minimum).
  * PC3  - LED3_X                    (output pushpull minimum).
  * PC4  - FSYNC                     (output pushpull minimum).
  * PC5  - UNUSED                    (analog).
- * PC6  - EXT_1                     (output pushpull minimum).
- * PC7  - EXT_2                     (output pushpull minimum).
+ * PC6  - EXT_1                     (output pushdown minimum).
+ * PC7  - EXT_2                     (output pushdown minimum).
  * PC8  - EXT_3                     (output pushpull minimum).
- * PC9  - EXT_4                     (output pushpull minimum).
+ * PC9  - EXT_4                     (output pushdown minimum).
  * PC10 - SPI3_SCK                  (alternate 6).
  * PC11 - SPI3_MISO                 (alternate 6).
  * PC12 - SPI3_MOSI                 (alternate 6).
@@ -463,10 +463,10 @@
                                      PIN_OTYPE_PUSHPULL(GPIOC_LED3_X) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_FSYNC) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOC_UNUSED) |     \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_EXT_1) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_EXT_2) |      \
+                                     PIN_OTYPE_OPENDRAIN(GPIOC_EXT_1) |     \
+                                     PIN_OTYPE_OPENDRAIN(GPIOC_EXT_2) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_EXT_3) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_EXT_4) |      \
+                                     PIN_OTYPE_OPENDRAIN(GPIOC_EXT_4) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_SCK) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_MISO) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_MOSI) |  \
@@ -489,15 +489,15 @@
                                      PIN_OSPEED_2M(GPIOC_SPI3_NSS) |        \
                                      PIN_OSPEED_2M(GPIOC_ST1) |             \
                                      PIN_OSPEED_2M(GPIOC_ST2))
-#define VAL_GPIOC_PUPDR             (PIN_PUPDR_FLOATING(GPIOC_STBY) |       \
-                                     PIN_PUPDR_FLOATING(GPIOC_EXT_10) |     \
-                                     PIN_PUPDR_FLOATING(GPIOC_EXT_11) |     \
+#define VAL_GPIOC_PUPDR             (PIN_PUPDR_PULLUP(GPIOC_STBY) |         \
+                                     PIN_PUPDR_PULLUP(GPIOC_EXT_10) |       \
+                                     PIN_PUPDR_PULLUP(GPIOC_EXT_11) |       \
                                      PIN_PUPDR_PULLUP(GPIOC_LED3_X) |       \
                                      PIN_PUPDR_PULLUP(GPIOC_FSYNC) |        \
                                      PIN_PUPDR_PULLUP(GPIOC_UNUSED) |       \
                                      PIN_PUPDR_PULLUP(GPIOC_EXT_1) |        \
                                      PIN_PUPDR_PULLUP(GPIOC_EXT_2) |        \
-                                     PIN_PUPDR_PULLUP(GPIOC_EXT_3) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOC_EXT_3) |      \
                                      PIN_PUPDR_PULLUP(GPIOC_EXT_4) |        \
                                      PIN_PUPDR_PULLUP(GPIOC_SPI3_SCK) |     \
                                      PIN_PUPDR_PULLUP(GPIOC_SPI3_MISO) |    \
@@ -554,8 +554,8 @@
  * PD10 - ST3                       (input floating).
  * PD11 - ST_DIS4                   (output pushpull minimum).
  * PD12 - RS485_DE                  (alternate 7).
- * PD13 - EXT_6                     (output pushpull minimum).
- * PD14 - EXT_7                     (output pushpull minimum).
+ * PD13 - EXT_6                     (output pushdown minimum).
+ * PD14 - EXT_7                     (output pushdown minimum).
  * PD15 - EXT_8                     (output pushpull minimum).
  */
 #define VAL_GPIOD_MODER             (PIN_MODE_OUTPUT(GPIOD_EXT_5) |         \
@@ -587,8 +587,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOD_ST3) |        \
                                      PIN_OTYPE_PUSHPULL(GPIOD_ST_DIS4) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOD_RS485_DE) |   \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_EXT_6) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_EXT_7) |      \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_EXT_6) |     \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_EXT_7) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOD_EXT_8))
 #define VAL_GPIOD_OSPEEDR           (PIN_OSPEED_2M(GPIOD_EXT_5) |           \
                                      PIN_OSPEED_2M(GPIOD_PROX_1) |          \
@@ -889,11 +889,18 @@
                                      PIN_AFIO_AF(GPIOF_PIN14, 0) |          \
                                      PIN_AFIO_AF(GPIOF_PIN15, 0))
 
+
 #define GPIOA_LED_1		GPIOA_LED1_X
 #define GPIOC_LED_2		GPIOA_LED2_X
-#define GPIOC_LED_3		GPIOC_LED3_X
+#define GPIOC_LED_3		GPIOB_IN4    // layout inversionGPIOC_LED3_X
 #define	GPIOD_RS485_RE	GPIOD_ST_DIS4
 
+/* LED power X16_1*/
+#define OUT_LEDPOWER_PORT		GPIOC
+#define OUT_LEDPOWER_PIN		GPIOC_EXT_10
+/* LED Configuration */
+#define LED_STBY_PAD        GPIOC
+#define LED_STBY_PIN        GPIOC_STBY
 
 
 #if !defined(_FROM_ASM_)

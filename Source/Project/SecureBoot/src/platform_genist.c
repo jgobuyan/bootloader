@@ -47,6 +47,19 @@
                          RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN |          \
                          RCC_AHBENR_CRCEN)
 /* On-board LED Mapping */
+#ifdef BOARD_GENIST_STM32F373_V5
+#define LED1_BASE (GPIO_TypeDef *)GPIOA_BASE
+#define LED1_PIN  (1<<GPIOA_LED1_X)
+#define LED2_BASE (GPIO_TypeDef *)GPIOA_BASE
+#define LED2_PIN  (1<<GPIOA_LED2_X)
+#define LED3_BASE (GPIO_TypeDef *)GPIOB_BASE
+#define LED3_PIN  (1<<GPIOB_IN4)
+#define HAZ2_BASE (GPIO_TypeDef *)GPIOB_BASE
+#define HAZ2_PIN  (1<<GPIOB_HAZ_2)
+/* RS485 Kludge */
+#define RS485RE_BASE	(GPIO_TypeDef *)GPIOD_BASE
+#define RS485RE_PIN (1<<GPIOD_ST_DIS4)
+#else
 #define LED1_BASE (GPIO_TypeDef *)GPIOA_BASE
 #define LED1_PIN  (1<<GPIOA_LED_1)
 #define LED2_BASE (GPIO_TypeDef *)GPIOC_BASE
@@ -59,6 +72,7 @@
 #define RS485RE_BASE	(GPIO_TypeDef *)GPIOD_BASE
 #define RS485RE_PIN (1<<GPIOD_RS485_RE)
 
+#endif
 /**
  * @brief   GPIO port setup info.
  */
@@ -198,16 +212,26 @@ uint32_t platform_getSwitchState(void)
 	uint8_t pinState;
 	uint32_t timeout = 20000000;
 	/* Sample Hazard 2 input. If it is ever detected low, then exit. */
+#ifndef BOARD_GENIST_STM32F373_V5
 	GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
 	GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
 	GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_SET);
+
+#endif
+
 	while (timeout > 0)
 	{
 		pinState = GPIO_ReadInputDataBit(HAZ2_BASE, HAZ2_PIN);
 		if (pinState == 1)
 		{
+#ifdef BOARD_GENIST_STM32F373_V5
+			GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
+			GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_SET);
+			GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
+#else
 			GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
 			GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_RESET);
+#endif
 			return 1;
 		}
 		timeout--;
@@ -239,8 +263,14 @@ void platform_redLedFlashOff(void)
  */
 void platform_redLedOn(void)
 {
-    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
 
+#ifdef BOARD_GENIST_STM32F373_V5
+    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
+    GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_SET);
+	GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_RESET);
+#else
+    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
+#endif
 }
 
 /**
@@ -248,7 +278,14 @@ void platform_redLedOn(void)
  */
 void platform_redLedOff(void)
 {
-    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
+#ifdef BOARD_GENIST_STM32F373_V5
+    GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_RESET);
+	GPIO_WriteBit(LED2_BASE, LED2_PIN, Bit_RESET);
+	GPIO_WriteBit(LED3_BASE, LED3_PIN, Bit_RESET);
+#else
+	GPIO_WriteBit(LED1_BASE, LED1_PIN, Bit_SET);
+#endif
+
 }
 
 /**
@@ -328,7 +365,8 @@ void DebugPutString1(char *s, uint32_t n)
  */
 void platform_rs485Kludge(uint8_t state)
 {
-	/*
+
+#ifndef BOARD_GENIST_STM32F373_V5
 	if (state)
 	{
 		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_RESET);
@@ -337,7 +375,7 @@ void platform_rs485Kludge(uint8_t state)
 	{
 		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_SET);
 	}
-	*/
+#endif
 }
 
 /**
