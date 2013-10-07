@@ -366,16 +366,16 @@ void DebugPutString1(char *s, uint32_t n)
 void platform_rs485Kludge(uint8_t state)
 {
 
-#ifndef BOARD_GENIST_STM32F373_V5
-	if (state)
-	{
-		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_RESET);
-	}
-	else
-	{
-		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_SET);
-	}
-#endif
+//#ifndef BOARD_GENIST_STM32F373_V5
+//	if (state)
+//	{
+//		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_RESET);
+//	}
+//	else
+//	{
+//		GPIO_WriteBit(RS485RE_BASE, RS485RE_PIN, Bit_SET);
+//	}
+//#endif
 }
 
 /**

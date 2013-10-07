@@ -34,6 +34,19 @@
 #include "flashmap.h"
 #include "fwheader.h"
 #include "stm32f37x.h"
+
+#define GPIOA_LED_1		GPIOA_LED1_X
+#define GPIOC_LED_2		GPIOA_LED2_X
+#define GPIOC_LED_3		GPIOB_IN4    // layout inversionGPIOC_LED3_X
+#define	GPIOD_RS485_RE	GPIOD_ST_DIS4
+
+/* LED power X16_1*/
+#define OUT_LEDPOWER_PORT		GPIOC
+#define OUT_LEDPOWER_PIN		GPIOC_EXT_10
+/* LED Configuration */
+#define LED_STBY_PAD        GPIOC
+#define LED_STBY_PIN        GPIOC_STBY
+
 /**
  * @addtogroup SecureBoot
  * @{

@@ -312,11 +312,11 @@
  * PB2  - SUPPLY_SENSE              (analog).
  * PB3  - SWO                       (alternate 0).
  * PB4  - HAZ_1                     (alternate 1).
- * PB5  - HAZ_2                     (input pullup).
+ * PB5  - HAZ_2                     (input pulldown).
  * PB6  - LSM_SCL                   (alternate 4).
  * PB7  - LSM_SDA                   (alternate 4).
  * PB8  - HALL_A                    (input pullup).
- * PB9  - HALL_B                    (analog).
+ * PB9  - HALL_B                    (alternate 1).
  * PB10 - VR_DIR                    (input pullup).
  * PB11 - PIN11                     (input pullup).
  * PB12 - PIN12                     (input pullup).
@@ -333,7 +333,7 @@
                                      PIN_MODE_ALTERNATE(GPIOB_LSM_SCL) |    \
                                      PIN_MODE_ALTERNATE(GPIOB_LSM_SDA) |    \
                                      PIN_MODE_INPUT(GPIOB_HALL_A) |         \
-                                     PIN_MODE_ANALOG(GPIOB_HALL_B) |        \
+                                     PIN_MODE_ALTERNATE(GPIOB_HALL_B) |     \
                                      PIN_MODE_INPUT(GPIOB_VR_DIR) |         \
                                      PIN_MODE_INPUT(GPIOB_PIN11) |          \
                                      PIN_MODE_INPUT(GPIOB_PIN12) |          \
@@ -345,17 +345,17 @@
                                      PIN_OTYPE_PUSHPULL(GPIOB_SUPPLY_SENSE) |\
                                      PIN_OTYPE_PUSHPULL(GPIOB_SWO) |        \
                                      PIN_OTYPE_PUSHPULL(GPIOB_HAZ_1) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_HAZ_2) |      \
+                                     PIN_OTYPE_OPENDRAIN(GPIOB_HAZ_2) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOB_LSM_SCL) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOB_LSM_SDA) |    \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_HALL_A) |     \
+                                     PIN_OTYPE_OPENDRAIN(GPIOB_HALL_A) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOB_HALL_B) |     \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_VR_DIR) |     \
+                                     PIN_OTYPE_OPENDRAIN(GPIOB_VR_DIR) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOB_PIN11) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOB_PIN12) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOB_PIN13) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOB_VAR_RUC1) |   \
-                                     PIN_OTYPE_PUSHPULL(GPIOB_VAR_RUC2))
+                                     PIN_OTYPE_OPENDRAIN(GPIOB_VAR_RUC2))
 #define VAL_GPIOB_OSPEEDR           (PIN_OSPEED_2M(GPIOB_PWM_OUT) |         \
                                      PIN_OSPEED_2M(GPIOB_IN4) |             \
                                      PIN_OSPEED_2M(GPIOB_SUPPLY_SENSE) |    \
@@ -377,7 +377,7 @@
                                      PIN_PUPDR_PULLUP(GPIOB_SUPPLY_SENSE) | \
                                      PIN_PUPDR_PULLDOWN(GPIOB_SWO) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_HAZ_1) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_HAZ_2) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_HAZ_2) |      \
                                      PIN_PUPDR_PULLUP(GPIOB_LSM_SCL) |      \
                                      PIN_PUPDR_PULLUP(GPIOB_LSM_SDA) |      \
                                      PIN_PUPDR_PULLUP(GPIOB_HALL_A) |       \
@@ -438,8 +438,8 @@
  * PC11 - SPI3_MISO                 (alternate 6).
  * PC12 - SPI3_MOSI                 (alternate 6).
  * PC13 - SPI3_NSS                  (output pushpull minimum).
- * PC14 - ST1                       (input floating).
- * PC15 - ST2                       (input floating).
+ * PC14 - ST1                       (input pullup).
+ * PC15 - ST2                       (input pullup).
  */
 #define VAL_GPIOC_MODER             (PIN_MODE_OUTPUT(GPIOC_STBY) |          \
                                      PIN_MODE_OUTPUT(GPIOC_EXT_10) |        \
@@ -471,8 +471,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_MISO) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_MOSI) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SPI3_NSS) |   \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_ST1) |        \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_ST2))
+                                     PIN_OTYPE_OPENDRAIN(GPIOC_ST1) |       \
+                                     PIN_OTYPE_OPENDRAIN(GPIOC_ST2))
 #define VAL_GPIOC_OSPEEDR           (PIN_OSPEED_2M(GPIOC_STBY) |            \
                                      PIN_OSPEED_2M(GPIOC_EXT_10) |          \
                                      PIN_OSPEED_2M(GPIOC_EXT_11) |          \
@@ -503,8 +503,8 @@
                                      PIN_PUPDR_PULLUP(GPIOC_SPI3_MISO) |    \
                                      PIN_PUPDR_PULLUP(GPIOC_SPI3_MOSI) |    \
                                      PIN_PUPDR_PULLUP(GPIOC_SPI3_NSS) |     \
-                                     PIN_PUPDR_FLOATING(GPIOC_ST1) |        \
-                                     PIN_PUPDR_FLOATING(GPIOC_ST2))
+                                     PIN_PUPDR_PULLUP(GPIOC_ST1) |          \
+                                     PIN_PUPDR_PULLUP(GPIOC_ST2))
 #define VAL_GPIOC_ODR               (PIN_ODR_HIGH(GPIOC_STBY) |             \
                                      PIN_ODR_HIGH(GPIOC_EXT_10) |           \
                                      PIN_ODR_HIGH(GPIOC_EXT_11) |           \
@@ -546,12 +546,12 @@
  * PD2  - PROX_2                    (input pullup).
  * PD3  - SPI2_MISO                 (alternate 5).
  * PD4  - SPI2_MOSI                 (alternate 5).
- * PD5  - ST4                       (input floating).
+ * PD5  - ST4                       (input pullup).
  * PD6  - SPI2_NSS                  (output pushpull minimum).
  * PD7  - SPI2_SCK                  (input pullup).
  * PD8  - RS485_TX                  (alternate 7).
  * PD9  - RS485_RX                  (alternate 7).
- * PD10 - ST3                       (input floating).
+ * PD10 - ST3                       (input pullup).
  * PD11 - ST_DIS4                   (output pushpull minimum).
  * PD12 - RS485_DE                  (alternate 7).
  * PD13 - EXT_6                     (output pushdown minimum).
@@ -575,16 +575,16 @@
                                      PIN_MODE_OUTPUT(GPIOD_EXT_7) |         \
                                      PIN_MODE_OUTPUT(GPIOD_EXT_8))
 #define VAL_GPIOD_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOD_EXT_5) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_PROX_1) |     \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_PROX_2) |     \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_PROX_1) |    \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_PROX_2) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOD_SPI2_MISO) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOD_SPI2_MOSI) |  \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_ST4) |        \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_ST4) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOD_SPI2_NSS) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOD_SPI2_SCK) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOD_RS485_TX) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOD_RS485_RX) |   \
-                                     PIN_OTYPE_PUSHPULL(GPIOD_ST3) |        \
+                                     PIN_OTYPE_OPENDRAIN(GPIOD_ST3) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOD_ST_DIS4) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOD_RS485_DE) |   \
                                      PIN_OTYPE_OPENDRAIN(GPIOD_EXT_6) |     \
@@ -611,12 +611,12 @@
                                      PIN_PUPDR_PULLUP(GPIOD_PROX_2) |       \
                                      PIN_PUPDR_PULLUP(GPIOD_SPI2_MISO) |    \
                                      PIN_PUPDR_PULLUP(GPIOD_SPI2_MOSI) |    \
-                                     PIN_PUPDR_FLOATING(GPIOD_ST4) |        \
+                                     PIN_PUPDR_PULLUP(GPIOD_ST4) |          \
                                      PIN_PUPDR_PULLUP(GPIOD_SPI2_NSS) |     \
                                      PIN_PUPDR_PULLUP(GPIOD_SPI2_SCK) |     \
                                      PIN_PUPDR_PULLUP(GPIOD_RS485_TX) |     \
                                      PIN_PUPDR_PULLUP(GPIOD_RS485_RX) |     \
-                                     PIN_PUPDR_FLOATING(GPIOD_ST3) |        \
+                                     PIN_PUPDR_PULLUP(GPIOD_ST3) |          \
                                      PIN_PUPDR_PULLUP(GPIOD_ST_DIS4) |      \
                                      PIN_PUPDR_PULLUP(GPIOD_RS485_DE) |     \
                                      PIN_PUPDR_PULLUP(GPIOD_EXT_6) |        \
@@ -817,7 +817,7 @@
                                      PIN_OTYPE_PUSHPULL(GPIOF_LSM_DR) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOF_PIN7) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOF_PIN8) |       \
-                                     PIN_OTYPE_PUSHPULL(GPIOF_PGOOD) |      \
+                                     PIN_OTYPE_OPENDRAIN(GPIOF_PGOOD) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOF_AIR_HEAT) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOF_PIN11) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOF_PIN12) |      \
@@ -901,6 +901,8 @@
 /* LED Configuration */
 #define LED_STBY_PAD        GPIOC
 #define LED_STBY_PIN        GPIOC_STBY
+
+
 
 
 #if !defined(_FROM_ASM_)
