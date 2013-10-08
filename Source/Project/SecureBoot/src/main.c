@@ -74,7 +74,6 @@ int main(void)
     fwHeader *pHdrA;
     fwHeader *pHdrB;
     fwHeader *pHdr = 0;
-
     /*!< At this stage the microcontroller clock setting is already configured,
      this is done through SystemInit() function which is called from startup
      file (startup_stm32f37x.s/startup_stm32f30x.s) before to branch to
@@ -117,8 +116,10 @@ int main(void)
         pHdr = pHdrB;
     }
 
+    DEBUG_PUTSTRING("Bootloader Check");
     /* If no valid loads or bootloader is invoked */
     if (!pHdr || platform_getSwitchState() == 0)
+//    if (platform_getSwitchState() == 0)
     {
         /* If Key is pressed, execute the IAP driver in order to re-program the Flash */
         SecureBoot_Init();
